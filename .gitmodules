@@ -1,0 +1,3 @@
+[submodule "LIDARLite_RaspberryPi_Library"]
+	path = LIDARLite_RaspberryPi_Library
+	url = https://github.com/garmin/LIDARLite_RaspberryPi_Library
