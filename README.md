@@ -14,7 +14,7 @@ Bismillah lulus 2022 ini juga
 - Connect via vnc with the ip or via ssh like the following:
 
   ```sh
-  ssh kaoripi@192.168.0.4
+  ssh kaoripi@192.168.0.5
   ```
 
 - Enter password
