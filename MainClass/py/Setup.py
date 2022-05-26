@@ -8,5 +8,5 @@
 
 import subprocess
 
-list_files = subprocess.run(["ls", "-l"])
+list_files = subprocess.run(["../../LIDARLite_RaspberryPi_Library/bin/llv3.out"])
 print("The exit code was: %d" % list_files.returncode)
