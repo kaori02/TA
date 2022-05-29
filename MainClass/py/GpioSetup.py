@@ -12,17 +12,17 @@ def setup():
 
 def loop():     
   while True:            
-         GPIO.output(LedPin, GPIO.LOW)   # led on
-         time.sleep(1.0)                                  # wait 1 sec    
-         GPIO.output(LedPin, GPIO.HIGH)  # led off
-         time.sleep(1.0)                                  # wait 1 sec
+    GPIO.output(LedPin, GPIO.LOW)   # led on
+    time.sleep(1.0)                                  # wait 1 sec    
+    GPIO.output(LedPin, GPIO.HIGH)  # led off
+    time.sleep(1.0)                                  # wait 1 sec
 def destroy():
-        GPIO.output(LedPin, GPIO.HIGH)     # led off
-        GPIO.cleanup()                                    # Release resource
+  GPIO.output(LedPin, GPIO.HIGH)     # led off
+  GPIO.cleanup()                                    # Release resource
 
 if __name__ == '__main__':                  # Program start from here
-      setup()
-      try:
-              loop()
-      except KeyboardInterrupt:            # When 'Ctrl+C' is pressed, the destroy() will be  executed.
-              destroy
+  setup()
+  try:
+    loop()
+  except KeyboardInterrupt:            # When 'Ctrl+C' is pressed, the destroy() will be  executed.
+    destroy()

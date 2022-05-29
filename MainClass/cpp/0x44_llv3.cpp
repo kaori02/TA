@@ -19,7 +19,7 @@
 #include <linux/types.h>
 #include <cstdio>
 
-#include <include/lidarlite_v3.h>
+#include <../LIDARLite_RaspberryPi_Library/include/lidarlite_v3.h>
 
 LIDARLite_v3 myLidarLite;
 
@@ -37,21 +37,14 @@ LIDARLite_v3 myLidarLite;
 int main()
 {
     __u16 distance;
-
     // Initialize i2c peripheral in the cpu core
     myLidarLite.i2c_init();
-
-    // Set an alternate i2c address in the LIDAR-Lite
-    // The 2nd argument, if non-zero, disables the default addr 0x62
-    myLidarLite.setI2Caddr(i2cSecondaryAddr, true);
-
     while(1)
     {
         myLidarLite.waitForBusy(i2cSecondaryAddr);
         myLidarLite.takeRange(i2cSecondaryAddr);
         distance      = myLidarLite.readDistance(i2cSecondaryAddr);
 
-        printf("%4d\n", distance);
+        printf("[0x44]\t%4d\n", distance);
     }
 }
-
