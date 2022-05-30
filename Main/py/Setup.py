@@ -16,7 +16,7 @@ def GpioSetup():
   time.sleep(1.0)                 # wait 1 sec
   
   # disini pindahin alamat yang on ke 44
-  moveOutput = subprocess.run(["../bin/moveTo0x44.out"])
+  moveOutput = subprocess.run(["bin/moveTo0x44.out"])
   print("The exit code was: %d" % moveOutput.returncode)
   
   # nyala lagi

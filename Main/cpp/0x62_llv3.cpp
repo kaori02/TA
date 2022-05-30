@@ -18,10 +18,18 @@
 
 #include <linux/types.h>
 #include <cstdio>
+#include <csignal>
+#include <iostream>
 
 #include <../LIDARLite_RaspberryPi_Library/include/lidarlite_v3.h>
 
 LIDARLite_v3 myLidarLite;
+
+void signalHandler(int signum)
+{
+   printf("Interrupt signal (\"%d\") received.\n", signum);
+   exit(signum);  
+}
 
 int main()
 {
@@ -33,6 +41,8 @@ int main()
 
     // Optionally configure LIDAR-Lite
     myLidarLite.configure(0);
+
+    signal(SIGINT, signalHandler);
 
     while(1)
     {

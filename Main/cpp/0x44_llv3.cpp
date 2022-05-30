@@ -18,6 +18,8 @@
 
 #include <linux/types.h>
 #include <cstdio>
+#include <csignal>
+#include <iostream>
 
 #include <../LIDARLite_RaspberryPi_Library/include/lidarlite_v3.h>
 
@@ -34,11 +36,20 @@ LIDARLite_v3 myLidarLite;
 
 #define i2cSecondaryAddr 0x44  // Set I2C address of LIDAR-Lite v3 to 0x44
 
+void signalHandler(int signum)
+{
+   printf("Interrupt signal (\"%d\") received.\n", signum);
+   exit(signum);  
+}
+
 int main()
 {
     __u16 distance;
     // Initialize i2c peripheral in the cpu core
     myLidarLite.i2c_init();
+
+    signal(SIGINT, signalHandler);
+
     while(1)
     {
         myLidarLite.waitForBusy(i2cSecondaryAddr);
