@@ -44,20 +44,17 @@ int main()
 
     signal(SIGINT, signalHandler);
 
-    while(1)
+    // Each time through the loop, check BUSY
+    busyFlag = myLidarLite.getBusyFlag();
+
+    if (busyFlag == 0x00)
     {
-        // Each time through the loop, check BUSY
-        busyFlag = myLidarLite.getBusyFlag();
+        // When no longer busy, immediately initialize another measurement
+        // and then read the distance data from the last measurement.
+        // This method will result in faster I2C rep rates.
+        myLidarLite.takeRange();
+        distance = myLidarLite.readDistance();
 
-        if (busyFlag == 0x00)
-        {
-            // When no longer busy, immediately initialize another measurement
-            // and then read the distance data from the last measurement.
-            // This method will result in faster I2C rep rates.
-            myLidarLite.takeRange();
-            distance = myLidarLite.readDistance();
-
-            printf("[0x62]\t%4d\n", distance);
-        }
+        printf("%4d\n", distance);
     }
 }

@@ -50,12 +50,9 @@ int main()
 
     signal(SIGINT, signalHandler);
 
-    while(1)
-    {
-        myLidarLite.waitForBusy(i2cSecondaryAddr);
-        myLidarLite.takeRange(i2cSecondaryAddr);
-        distance      = myLidarLite.readDistance(i2cSecondaryAddr);
+    myLidarLite.waitForBusy(i2cSecondaryAddr);
+    myLidarLite.takeRange(i2cSecondaryAddr);
+    distance      = myLidarLite.readDistance(i2cSecondaryAddr);
 
-        printf("[0x44]\t%4d\n", distance);
-    }
+    printf("%4d\n", distance);
 }
