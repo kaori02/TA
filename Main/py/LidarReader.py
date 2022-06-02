@@ -1,7 +1,6 @@
 from subprocess import Popen, PIPE
 
 class LidarReader:
-  # lidar_proc = None
   def __init__(self, path):
     self.path = path
     self.name = path.replace('_llv3.out', '').replace('./bin/', '')
