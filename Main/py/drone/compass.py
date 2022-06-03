@@ -1,4 +1,4 @@
-import py_qmc5883l
+import drone.py_qmc5883l as py_qmc5883l
 from time import sleep
 
 class Compass:
