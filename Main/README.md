@@ -12,5 +12,5 @@ This is the very first thing that will run everytime we want to run the LiDAR pr
 ```sh
 $ chmod +x make_all.sh
 $ ./make_all.sh
-$ python py/Main.py
+$ python3 py/Main.py
 ```
