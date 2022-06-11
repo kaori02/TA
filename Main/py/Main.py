@@ -1,17 +1,18 @@
 # Skrip untuk ambil data LiDAR, logika, dan kirim perintah ke drone
 # - Ambil data dari kedua LiDAR sekaligus algonya pake script py
 
-from drone.compass import Compass
+# from drone.compass import Compass
 from drone.drone import Drone
 from drone.droneState import DroneState
 from LidarReader import LidarReader
+from ObstacleAvoidance.ObstacleAvoidance import ObstacleAvoidance 
 import sys
 import time
 
 # IP drone untuk koneksi
 DRONE_IP = "192.168.42.1"
 drone = Drone(DRONE_IP)
-compass = Compass()
+# compass = Compass()
 
 modeHome = False
 switch = False
@@ -114,15 +115,28 @@ def main():
       print("interrupt")
       sys.exit
 
+def obs_avo():
+  # bikin state (done)
+  # bikin threshold
+  # read data kedua sensor
+  # kalo masuk threshold, ganti state sambil berhenti sambil catat waktu dan arah yang diambil selama menghindar
+  # geser kanan/kiri kalo obs di kiri/kanan. Kalo nutupin keduanya, geser atas
+  pass
+
+
 if __name__ == "__main__":
   # main()
   try:
     lidar_0x44 = LidarReader("./bin/0x44_llv3.out")
     lidar_0x62 = LidarReader("./bin/0x62_llv3.out")
+    obs_threshold = 100
+    obstacle_avoidance = ObstacleAvoidance(obs_threshold)
     while True:
-      print(lidar_0x44.readName()+"\t"+lidar_0x44.readData())
-      print(lidar_0x62.readName()+"\t"+lidar_0x62.readData())
+      # print(lidar_0x44.readName() + "\t" + lidar_0x44.readData())
+      # print(lidar_0x62.readName() + "\t" + lidar_0x62.readData())
+      obstacle_avoidance.continuous_obs_detection(lidar_0x44.readData(), lidar_0x62.readData())
   except KeyboardInterrupt:
+    del obstacle_avoidance
     del lidar_0x44
     del lidar_0x62
     print("interrupt")

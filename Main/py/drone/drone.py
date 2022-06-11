@@ -1,6 +1,6 @@
 from math import cos, sin, sqrt, pow, radians, tan, atan, atan2, degrees
 import olympe
-from droneState import DroneState
+from drone.droneState import DroneState
 from olympe.messages.ardrone3.PilotingSettings import MaxTilt
 from olympe.messages.ardrone3.Piloting import TakeOff, moveBy, Landing
 from olympe.messages.ardrone3.PilotingState import FlyingStateChanged
