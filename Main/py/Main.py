@@ -6,6 +6,7 @@ from drone.drone import Drone
 from drone.droneState import DroneState
 from LidarReader import LidarReader
 from ObstacleAvoidance.ObstacleAvoidance import ObstacleAvoidance 
+from ObstacleAvoidance.ObstacleAvoidanceState import ObstacleAvoidanceState
 import sys
 import time
 
@@ -65,9 +66,6 @@ def main():
         # menambah ketinggian drone sebesar 5 meter, untuk lebih detail cek drone.py
         drone.moveTo(0.0, -5.0)
       else:
-        print(lidar_0x44.readName()+"\t"+lidar_0x44.readData())
-        print(lidar_0x62.readName()+"\t"+lidar_0x62.readData())
-
         distance, locBearing = drone.calculateDistance(pointDestination[0], pointDestination[1])
         while distance < 0.0:
           # dilakukan pengecekan untuk GPS drone, bila gps tidak menangkap lokasi maka akan terjebak di
@@ -106,6 +104,9 @@ def main():
             modeHome = True
             break
         else:
+          # disini ngecek obstacle dll
+          print(lidar_0x44.readName()+"\t"+lidar_0x44.readData())
+          print(lidar_0x62.readName()+"\t"+lidar_0x62.readData())
           checkDroneBearing(abs(locBearing))
           drone.moveTo(distance, 0.0)
           totalDistance = totalDistance - distance
@@ -115,26 +116,49 @@ def main():
       print("interrupt")
       sys.exit
 
-def obs_avo():
-  # bikin state (done)
-  # bikin threshold
-  # read data kedua sensor
-  # kalo masuk threshold, ganti state sambil berhenti sambil catat waktu dan arah yang diambil selama menghindar
-  # geser kanan/kiri kalo obs di kiri/kanan. Kalo nutupin keduanya, geser atas
-  pass
-
-
 if __name__ == "__main__":
   # main()
   try:
     lidar_0x44 = LidarReader("./bin/0x44_llv3.out")
     lidar_0x62 = LidarReader("./bin/0x62_llv3.out")
-    obs_threshold = 100
+    obs_threshold = 100     # 100 cm
+    t_end = -99.0
+    wait_time = 5
     obstacle_avoidance = ObstacleAvoidance(obs_threshold)
     while True:
       # print(lidar_0x44.readName() + "\t" + lidar_0x44.readData())
       # print(lidar_0x62.readName() + "\t" + lidar_0x62.readData())
-      obstacle_avoidance.continuous_obs_detection(lidar_0x44.readData(), lidar_0x62.readData())
+      # TODO: cari tau seberapa cepat drone bisa jalan
+
+      print("[LEFT] " + str(lidar_0x44.readData()) + "\t" + "[RIGHT] " + str(lidar_0x62.readData()))
+
+      if obstacle_avoidance.get_state() == ObstacleAvoidanceState.CLEAR:
+        obstacle_avoidance.continuous_obs_detection(lidar_0x44.readData(), lidar_0x62.readData())
+      
+      elif obstacle_avoidance.get_state() == ObstacleAvoidanceState.FOUND:
+        if obstacle_avoidance.get_timer_hold_status():
+          t_end = time.time() + wait_time
+          obstacle_avoidance.set_timer_hold_status(False)
+        
+        # TODO: diem bentar (hovering) buat bandingin
+        if time.time() < t_end:
+          # hovering disini
+          obstacle_avoidance.determine_direction(lidar_0x44.readData(), lidar_0x62.readData())
+        else:
+          # selesai hovering, ganti ke AVOIDING
+          pass
+        
+
+      elif obstacle_avoidance.get_state() == ObstacleAvoidanceState.AVOIDING:
+        # gerak ke arah yg dikira kosong sambil catat waktu
+        # lalu maju selama beberapa detik
+        # lalu cek lagi, kalo kosong, ke back
+        pass
+      
+      elif obstacle_avoidance.get_state() == ObstacleAvoidanceState.BACK:
+        # kembali ke jalur awal
+        pass
+  
   except KeyboardInterrupt:
     del obstacle_avoidance
     del lidar_0x44

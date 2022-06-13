@@ -7,7 +7,7 @@ class LidarReader:
 
   def readData(self):
     self.lidar_proc = Popen([self.path], stdout=PIPE)
-    return self.lidar_proc.stdout.readline().decode("utf-8").strip()
+    return int(self.lidar_proc.stdout.readline().decode("utf-8").strip())
 
   def readName(self):
     return self.name

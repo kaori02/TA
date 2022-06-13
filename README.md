@@ -1,4 +1,4 @@
-# Code for my TA
+# Code for my Final Project
 
 Bismillah lulus 2022 ini juga
 
@@ -43,3 +43,7 @@ From the menu, select
 
 - Wire a 680uF capacitor across pins 4 and 6
 ```
+
+## How To Run
+
+Check [README](Main/README.md) file in `Main` directory.
