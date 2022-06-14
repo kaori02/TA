@@ -1,10 +1,11 @@
+from collections import Counter
+from enum import Enum
 from ObstacleAvoidance.ObstacleAvoidanceState import ObstacleAvoidanceState
 from LidarReader import LidarReader
 import time
 
 class ObstacleAvoidance:
-  list_of_action_done = []
-  class DirectionState(enum):
+  class DirectionState(Enum):
     FRONT = 0
     UP    = 1
     DOWN  = 2
@@ -20,6 +21,7 @@ class ObstacleAvoidance:
     self.t_end = -99.0
     self.t_maju = -99.0
     self.is_maju = False
+    self.list_of_action_done = []
 
   def get_state(self):
     return self.state
@@ -88,13 +90,14 @@ class ObstacleAvoidance:
       self.is_maju = False
 
     if time.time() < self.t_maju:
-      print("remaining maju time :" + str(self.t_maju-time.time()))
+      print("remaining MAJU time :" + str(self.t_maju-time.time()))
       # maju disini
       print("FRONT CLEAR, Maju 2 detik")
 
     elif (self.t_maju < time.time()) and (self.t_maju != -99.0) and (left_data > self.threshold) and (right_data > self.threshold):
       # kelar maju, set ke BACK
       self.set_state(ObstacleAvoidanceState.BACK)
+      self.set_timer_hold_status(True)
     
     elif left_data > self.threshold and right_data > self.threshold:
       # kalo gada apa2 lagi di depannya, waktunya dikelarin
@@ -103,7 +106,7 @@ class ObstacleAvoidance:
     
     ########### disini manuver avoidnya ###########
     elif time.time() < self.t_end:
-      print("remaining avoid time :" + str(self.t_end-time.time()))
+      print("remaining AVOID time :" + str(self.t_end-time.time()))
       
       # disini gerak manuver avoidnya
       if current_direction == self.DirectionState.RIGHT:
@@ -119,12 +122,27 @@ class ObstacleAvoidance:
       self.set_state(ObstacleAvoidanceState.FOUND)
       self.set_direction(self.DirectionState.HOLD)
       self.set_timer_hold_status(True)
+  
   # WIP
-  def back(self, direction):
+  def back(self):
     """
     Fungsi back terpanggil saat semua manuver avoiding sudah selesai
 
     fungsi ini digunakan untuk kembali ke jalur semula dari drone
     """
-    # back ke arah lawan dari direction
-    # bkin counter buat avoid, udah berapa kali doi ngelewatin FOUND
+    # back ke arah lawan dari kumpulan directions
+    # directionnya itu list of direction yang dituju pas dia dari found mau ke avoid
+    
+    # 1. hitung tiap actionnya
+    # 2. selisihkan
+    # 3. arah akhir = sisa
+    print("back")
+    
+    # setelah nentuin arah, menuju arah itu selama 5 detik
+    if self.get_timer_hold_status():
+      print("timer back ON")
+      self.t_end = time.time() + 5
+      self.set_timer_hold_status(False)
+
+    # kalo done
+    self.list_of_action_done.clear()

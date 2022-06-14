@@ -122,11 +122,10 @@ if __name__ == "__main__":
   try:
     lidar_0x44 = LidarReader("./bin/0x44_llv3.out")
     lidar_0x62 = LidarReader("./bin/0x62_llv3.out")
-    obs_avo = ObstacleAvoidance(obs_threshold)
     obs_threshold = 100     # 100 cm
+    obs_avo = ObstacleAvoidance(obs_threshold)
     t_end = -99.0
     wait_time = 5
-    back_direction = obs_avo.DirectionState.HOLD
     
     while True:
       # print(lidar_0x44.readName() + "\t" + lidar_0x44.readData())
@@ -152,15 +151,17 @@ if __name__ == "__main__":
         
         # TODO: diem bentar (hovering) buat bandingin
         if time.time() < t_end:
-          print("remaining time:" + str(t_end-time.time()))
+          print("remaining HOVERING time:" + str(t_end-time.time()))
           
           # hovering disini
           obs_avo.determine_direction(left_data, right_data)
         else:
           # selesai hovering, ganti ke AVOIDING
           # kalo dia termasuk salah satu diatas, masuk ke state AVOIDING
-          back_direction = obs_avo.get_direction()
-          if back_direction != obs_avo.DirectionState.HOLD:
+          direction = obs_avo.get_direction()
+          obs_avo.list_of_action_done.append(direction)
+
+          if direction != obs_avo.DirectionState.HOLD:
             obs_avo.set_state(obsAvoState.AVOIDING)
             obs_avo.set_timer_hold_status(True)
 
@@ -171,7 +172,7 @@ if __name__ == "__main__":
       ########### BACK ###########
       # WIP
       elif obs_avo_state == obsAvoState.BACK:
-        back(back_direction)
+        back()
   
   except KeyboardInterrupt:
     del obs_avo
