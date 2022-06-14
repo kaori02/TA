@@ -6,7 +6,8 @@ from drone.drone import Drone
 from drone.droneState import DroneState
 from LidarReader import LidarReader
 from ObstacleAvoidance.ObstacleAvoidance import ObstacleAvoidance 
-from ObstacleAvoidance.ObstacleAvoidanceState import ObstacleAvoidanceState
+from ObstacleAvoidance.ObstacleAvoidanceState import ObstacleAvoidanceState as obsAvoState
+import logging
 import sys
 import time
 
@@ -121,46 +122,59 @@ if __name__ == "__main__":
   try:
     lidar_0x44 = LidarReader("./bin/0x44_llv3.out")
     lidar_0x62 = LidarReader("./bin/0x62_llv3.out")
+    obs_avo = ObstacleAvoidance(obs_threshold)
     obs_threshold = 100     # 100 cm
     t_end = -99.0
     wait_time = 5
-    obstacle_avoidance = ObstacleAvoidance(obs_threshold)
+    back_direction = obs_avo.DirectionState.HOLD
+    
     while True:
       # print(lidar_0x44.readName() + "\t" + lidar_0x44.readData())
       # print(lidar_0x62.readName() + "\t" + lidar_0x62.readData())
       # TODO: cari tau seberapa cepat drone bisa jalan
+      left_data  = lidar_0x44.readData()
+      right_data = lidar_0x62.readData()
+      print("[LEFT] " + str(left_data) + "\t" + "[RIGHT] " + str(right_data))
 
-      print("[LEFT] " + str(lidar_0x44.readData()) + "\t" + "[RIGHT] " + str(lidar_0x62.readData()))
-
-      if obstacle_avoidance.get_state() == ObstacleAvoidanceState.CLEAR:
-        obstacle_avoidance.continuous_obs_detection(lidar_0x44.readData(), lidar_0x62.readData())
+      obs_avo_state = obs_avo.get_state()
       
-      elif obstacle_avoidance.get_state() == ObstacleAvoidanceState.FOUND:
-        if obstacle_avoidance.get_timer_hold_status():
+      ########### CLEAR ###########
+      if obs_avo_state == obsAvoState.CLEAR:
+        obs_avo.continuous_obs_detection(left_data, right_data)
+      
+      ########### FOUND ###########
+      elif obs_avo_state == obsAvoState.FOUND:
+        # hold selama wait_time
+        if obs_avo.get_timer_hold_status():
+          print("timer on")
           t_end = time.time() + wait_time
-          obstacle_avoidance.set_timer_hold_status(False)
+          obs_avo.set_timer_hold_status(False)
         
         # TODO: diem bentar (hovering) buat bandingin
         if time.time() < t_end:
+          print("remaining time:" + str(t_end-time.time()))
+          
           # hovering disini
-          obstacle_avoidance.determine_direction(lidar_0x44.readData(), lidar_0x62.readData())
+          obs_avo.determine_direction(left_data, right_data)
         else:
           # selesai hovering, ganti ke AVOIDING
-          pass
-        
+          # kalo dia termasuk salah satu diatas, masuk ke state AVOIDING
+          back_direction = obs_avo.get_direction()
+          if back_direction != obs_avo.DirectionState.HOLD:
+            obs_avo.set_state(obsAvoState.AVOIDING)
+            obs_avo.set_timer_hold_status(True)
 
-      elif obstacle_avoidance.get_state() == ObstacleAvoidanceState.AVOIDING:
-        # gerak ke arah yg dikira kosong sambil catat waktu
-        # lalu maju selama beberapa detik
-        # lalu cek lagi, kalo kosong, ke back
-        pass
+      ########### AVOIDING ###########
+      elif obs_avo_state == obsAvoState.AVOIDING:
+        obs_avo.avoid(left_data, right_data)
       
-      elif obstacle_avoidance.get_state() == ObstacleAvoidanceState.BACK:
-        # kembali ke jalur awal
-        pass
+      ########### BACK ###########
+      # WIP
+      elif obs_avo_state == obsAvoState.BACK:
+        back(back_direction)
   
   except KeyboardInterrupt:
-    del obstacle_avoidance
+    del obs_avo
     del lidar_0x44
     del lidar_0x62
     print("interrupt")
