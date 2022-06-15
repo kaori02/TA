@@ -44,6 +44,10 @@ def switchDestination():
   pointDestination[0] = pointHome[0]
   pointDestination[1] = pointHome[1]
 
+def obstacle_avoidance():
+  # TODO: semua yang di main sekarang bakal masuk kesini nantinya
+  pass
+
 def main():
   drone.connectToDrone()
   lidar_0x44 = LidarReader("./bin/0x44_llv3.out")
@@ -152,16 +156,19 @@ if __name__ == "__main__":
         # TODO: diem bentar (hovering) buat bandingin
         if time.time() < t_end:
           print("remaining HOVERING time:" + str(t_end-time.time()))
-          
+
           # hovering disini
-          obs_avo.determine_direction(left_data, right_data)
+          obs_avo.set_direction(obs_avo.DirectionState.HOLD, obs_avo.DirectionState.HOLD)
         else:
           # selesai hovering, ganti ke AVOIDING
-          # kalo dia termasuk salah satu diatas, masuk ke state AVOIDING
+          obs_avo.determine_direction(left_data, right_data)
+          
           direction = obs_avo.get_direction()
-          obs_avo.list_of_action_done.append(direction)
+          v_direction, h_direction = direction
+          obs_avo.v_dir_done.append(v_direction)
+          obs_avo.h_dir_done.append(h_direction)
 
-          if direction != obs_avo.DirectionState.HOLD:
+          if direction != (obs_avo.DirectionState.HOLD, obs_avo.DirectionState.HOLD):
             obs_avo.set_state(obsAvoState.AVOIDING)
             obs_avo.set_timer_hold_status(True)
 
