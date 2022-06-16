@@ -27,6 +27,8 @@ class ObstacleAvoidance:
     self.v_counter = -99
     self.h_counter = -99
     self.is_counting = False
+    self.v_back = self.DirectionState.HOLD
+    self.h_back = self.DirectionState.FRONT
 
   def get_state(self):
     return self.state
@@ -49,6 +51,19 @@ class ObstacleAvoidance:
 
   def reset_timer(self):
     self.t_end = -99.0
+    self.t_maju = -99.0
+
+  def reset_all(self):
+    self.reset_timer()
+    self.state = ObstacleAvoidanceState.CLEAR
+    self.v_direction = self.DirectionState.HOLD
+    self.h_direction = self.DirectionState.FRONT
+    self.v_dir_done = []
+    self.h_dir_done = []
+    self.v_counter = -99
+    self.h_counter = -99
+    self.v_back = self.DirectionState.HOLD
+    self.h_back = self.DirectionState.FRONT
 
   def continuous_obs_detection(self, left_data, right_data):
     if (left_data <= self.threshold or right_data <= self.threshold):
@@ -80,7 +95,7 @@ class ObstacleAvoidance:
     """
     Fungsi avoid terpanggil saat state=AVOIDING
     saat fungsi ini dipanggil, semua aksi yang dilakukan oleh drone saat menghindar
-    akan dicatat dalam list_of_action_done[] 
+    akan dicatat dalam list
     """
     # gerak ka arah yg dikira kosong sampe aman (max 5 detik)
     # kalo ga aman2, hold 2 detik buat bandingin lagi
@@ -110,6 +125,7 @@ class ObstacleAvoidance:
       # kelar maju, set ke BACK
       self.set_state(ObstacleAvoidanceState.BACK)
       self.set_direction(self.DirectionState.HOLD, self.DirectionState.FRONT)
+      self.reset_timer()
       self.set_timer_hold_status(True)
       self.is_counting = True
     
@@ -134,55 +150,52 @@ class ObstacleAvoidance:
       print("BINGUNG")
       self.continuous_obs_detection(left_data, right_data)
   
-  # WIP
-  def back(self):
+  def back(self, left_data, right_data):
     """
     Fungsi back terpanggil saat semua manuver avoiding sudah selesai
 
     fungsi ini digunakan untuk kembali ke jalur semula dari drone
     """
-    # back ke arah lawan dari kumpulan arah
-    # directionnya itu list arah yang dituju pas dia dari found mau ke avoid
-    
-    # 1. hitung tiap actionnya
-    # 2. selisihkan
-    # 3. arah akhir = sisa
-    print("back")
-    if self.is_counting:
-      print("counting")
-      self.v_counter = Counter(self.v_dir_done)
-      self.h_counter = Counter(self.h_dir_done)
-      self.is_counting = False
 
-    # yang perlu diperhatikan: LEFT, RIGHT, UP
-    # ARAH HORIZONTAL = LEFT - RIGHT
-    left_right = self.h_counter[self.DirectionState.LEFT] - self.h_counter[self.DirectionState.RIGHT]
-    if left_right < 0:
-      self.set_direction(self.DirectionState.HOLD, self.DirectionState.LEFT)
-    else:
-      self.set_direction(self.DirectionState.HOLD, self.DirectionState.RIGHT)
-    left_right = abs(left_right)
-    # nanti dia bergerak sebanyak left_right, tapi waktunya dibatesin max 3 detik tiap arah
-    
-    # VERTICAL
-    # DOWN = -UP
-    down = self.counter[self.DirectionState.UP]
-    if down > 0:
-      self.set_direction(self.DirectionState.DOWN)
+    self.continuous_obs_detection(left_data, right_data)
+    # kalo setelah deteksi doi ga berubah jadi FOUND, baru lanjut
+    if self.get_state() != ObstacleAvoidanceState.FOUND:
+      print("back")
+      if self.is_counting:
+        print("counting")
+        self.v_counter = Counter(self.v_dir_done)
+        self.h_counter = Counter(self.h_dir_done)
+        self.is_counting = False
 
-    # TODO
-    # final_direction = kombinasi left_right dan down
-    # down dibatasi sampai 1.5 m paling rendah
-    
-    # setelah nentuin arah, menuju arah itu selama 5 detik
-    if self.get_timer_hold_status():
-      print("timer back ON")
-      self.t_end = time.time() + 5
-      self.set_timer_hold_status(False)
+      # ARAH BACK HORIZONTAL = LEFT - RIGHT
+      h_back_cnt = self.h_counter[self.DirectionState.LEFT] - self.h_counter[self.DirectionState.RIGHT]
+      
+      if h_back_cnt < 0:
+        self.h_back = self.DirectionState.LEFT
+      elif h_back_cnt > 0:
+        self.h_back = self.DirectionState.RIGHT
+      
+      h_back_cnt = abs(h_back_cnt)
+      
+      # VERTICAL = DOWN = -UP
+      # TODO: down dibatasi sampai 1.5 m paling rendah
+      v_back_cnt = self.v_counter[self.DirectionState.UP]
+      if v_back_cnt > 0:
+        self.v_back = self.DirectionState.DOWN
 
-    if time.time() < self.t_end:
-      print("remaining BACK time :" + str(self.t_end-time.time()))
-    else:
-      # kalo done
-      self.list_of_action_done.clear()
-      self.continuous_obs_detection(left_data, right_data)
+      # setelah nentuin arah, menuju arah itu dengan waktunya dibatesin max 3 detik tiap arah
+      if self.get_timer_hold_status():
+        print("timer BACK ON")
+        self.t_end = time.time() + min(3 * max(v_back_cnt, h_back_cnt), 6)
+        self.set_timer_hold_status(False)
+
+      if time.time() < self.t_end:
+        print("remaining BACK time :" + str(self.t_end-time.time()))
+        self.set_direction(self.v_back, self.h_back)
+      
+      elif (self.t_end < time.time()) and (self.t_end != -99.0) and (left_data > self.threshold) and (right_data > self.threshold):
+        # done, balik ke CLEAR
+        self.reset_all()
+
+      else:
+        self.continuous_obs_detection(left_data, right_data)

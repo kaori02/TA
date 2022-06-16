@@ -153,7 +153,6 @@ if __name__ == "__main__":
           t_end = time.time() + wait_time
           obs_avo.set_timer_hold_status(False)
         
-        # TODO: diem bentar (hovering) buat bandingin
         if time.time() < t_end:
           print("remaining HOVERING time:" + str(t_end-time.time()))
 
@@ -177,9 +176,8 @@ if __name__ == "__main__":
         obs_avo.avoid(left_data, right_data)
       
       ########### BACK ###########
-      # WIP
       elif obs_avo_state == obsAvoState.BACK:
-        back()
+        obs_avo.back(left_data, right_data)
   
   except KeyboardInterrupt:
     del obs_avo

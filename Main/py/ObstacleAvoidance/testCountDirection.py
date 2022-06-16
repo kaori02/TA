@@ -37,3 +37,12 @@ for i in counter:
     print(type(i.value))
     print(type(counter[i]))
 
+i = DirectionState.DOWN
+print("key: ",i, "\tvalue[0]: ",i.value, "\tamount: ",counter[i])
+print(counter[i])
+print(type(i))
+print(type(i.value))
+print(type(counter[i]))
+
+print(max(0, 2))
+print(min(0, 2))
