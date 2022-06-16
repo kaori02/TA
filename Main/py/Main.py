@@ -44,20 +44,67 @@ def switchDestination():
   pointDestination[0] = pointHome[0]
   pointDestination[1] = pointHome[1]
 
-def obstacle_avoidance():
-  # TODO: semua yang di main sekarang bakal masuk kesini nantinya
-  pass
+def obstacle_avoidance(left_data, right_data, obs_avo):
+  obs_avo_state = obs_avo.get_state()
+  ########### CLEAR ###########
+  if obs_avo_state == obsAvoState.CLEAR:
+    obs_avo.continuous_obs_detection(left_data, right_data)
+  
+  ########### FOUND ###########
+  elif obs_avo_state == obsAvoState.FOUND:
+    # hold selama wait_time
+    if obs_avo.get_timer_hold_status():
+      print("timer on")
+      t_end = time.time() + wait_time
+      obs_avo.set_timer_hold_status(False)
+    
+    if time.time() < t_end:
+      print("remaining HOVERING time:" + str(t_end-time.time()))
+
+      # hovering disini
+      obs_avo.set_direction(obs_avo.DirectionState.HOLD, obs_avo.DirectionState.HOLD)
+    else:
+      # selesai hovering, ganti ke AVOIDING
+      obs_avo.determine_direction(left_data, right_data)
+      
+      direction = obs_avo.get_direction()
+      v_direction, h_direction = direction
+      obs_avo.v_dir_done.append(v_direction)
+      obs_avo.h_dir_done.append(h_direction)
+
+      if direction != (obs_avo.DirectionState.HOLD, obs_avo.DirectionState.HOLD):
+        obs_avo.set_state(obsAvoState.AVOIDING)
+        obs_avo.set_timer_hold_status(True)
+
+  ########### AVOIDING ###########
+  elif obs_avo_state == obsAvoState.AVOIDING:
+    obs_avo.avoid(left_data, right_data)
+  
+  ########### BACK ###########
+  elif obs_avo_state == obsAvoState.BACK:
+    obs_avo.back(left_data, right_data)
+
 
 def main():
   drone.connectToDrone()
+  
   lidar_0x44 = LidarReader("./bin/0x44_llv3.out")
   lidar_0x62 = LidarReader("./bin/0x62_llv3.out")
+  obs_threshold = 100     # 100 cm
+  obs_avo = ObstacleAvoidance(obs_threshold)
+  t_end = -99.0
+  wait_time = 5
 
   while True:
     global initDistance
     global totalDistance
     global modeHome
     global switch
+
+    left_data  = lidar_0x44.readData()
+    right_data = lidar_0x62.readData()
+    print("[LEFT] " + str(left_data) + "\t" + "[RIGHT] " + str(right_data))
+
     if modeHome == True and switch == False:
       # mengecek apakah drone ada di mode kembali ke titik home dan apakah titik tujuan sudah ditukar,
       # bila belum maka value pointDestination akan diubah menjadi value pointHome
@@ -68,8 +115,8 @@ def main():
         # mengecek bila drone sedang mendarat maka akan diperintahkan untuk takeoff
         drone.waitGPSFix()
         drone.takeoff()
-        # menambah ketinggian drone sebesar 5 meter, untuk lebih detail cek drone.py
-        drone.moveTo(0.0, -5.0)
+        # menambah ketinggian drone sebesar 0.5 meter, untuk lebih detail cek drone.py
+        drone.moveTo(0.0, -0.5)
       else:
         distance, locBearing = drone.calculateDistance(pointDestination[0], pointDestination[1])
         while distance < 0.0:
@@ -109,13 +156,21 @@ def main():
             modeHome = True
             break
         else:
-          # disini ngecek obstacle dll
-          print(lidar_0x44.readName()+"\t"+lidar_0x44.readData())
-          print(lidar_0x62.readName()+"\t"+lidar_0x62.readData())
-          checkDroneBearing(abs(locBearing))
-          drone.moveTo(distance, 0.0)
+          # disini ngecek obstacle
+          obstacle_avoidance(left_data, right_data, obs_avo)
+
+          # TODO: [WIP]
+          # cek drone bearing cuma dilakukan kalo dia CLEAR
+          if obs_avo.get_state() == obsAvoState.CLEAR:
+            checkDroneBearing(abs(locBearing))
+            drone.moveTo(distance, 0.0)
+          else:
+            v_dir, h_dir = obs_avo.get_direction()
+            # todo: disini move based on direction
+
           totalDistance = totalDistance - distance
     except KeyboardInterrupt:
+      del obs_avo
       del lidar_0x44
       del lidar_0x62
       print("interrupt")

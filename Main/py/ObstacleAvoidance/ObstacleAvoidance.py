@@ -34,6 +34,7 @@ class ObstacleAvoidance:
     return self.state
 
   def get_direction(self):
+    '''return ObstacleAvoidance.v_direction, ObstacleAvoidance.h_direction'''
     return self.v_direction, self.h_direction
   
   def get_timer_hold_status(self):
