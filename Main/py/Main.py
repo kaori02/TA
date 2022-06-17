@@ -159,14 +159,36 @@ def main():
           # disini ngecek obstacle
           obstacle_avoidance(left_data, right_data, obs_avo)
 
-          # TODO: [WIP]
           # cek drone bearing cuma dilakukan kalo dia CLEAR
           if obs_avo.get_state() == obsAvoState.CLEAR:
             checkDroneBearing(abs(locBearing))
             drone.moveTo(distance, 0.0)
           else:
             v_dir, h_dir = obs_avo.get_direction()
-            # todo: disini move based on direction
+            displacement = 0.2    # 20 cm
+            
+            v_dis = displacement
+            h_dis = displacement
+            f_dis = 0
+            
+            # HOLD = 0
+            # FRONT
+            if h_dir == obs_avo.DirectionState.FRONT:
+              f_dis = displacement
+
+            # UP    = -down
+            if v_dir == obs_avo.DirectionState.UP:
+              v_dis = -v_dis
+            elif v_dir == obs_avo.DirectionState.HOLD:
+              v_dis = 0
+            
+            # LEFT  = -right
+            if h_dir == obs_avo.DirectionState.LEFT:
+              h_dis = -h_dis
+            elif h_dir == obs_avo.DirectionState.HOLD:
+              h_dis = 0
+
+            drone.move(f_dis, h_dis, v_dis)
 
           totalDistance = totalDistance - distance
     except KeyboardInterrupt:

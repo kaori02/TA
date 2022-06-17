@@ -50,13 +50,16 @@ class Drone():
             self.state = DroneState.TAKEOFF
             self.write("Takeoff...\n")
 
-    # TODO: [WIP]
-    def move(self, dist, altitude):
-        # fungsi untuk menggerakan drone, fungsi ini di sdk parrot bernama "moveBy" dan
-        # memiliki 4 parameter, yaitu moveBy(maju_mundur, kanan_kiri, atas_bawah, memutar drone sebesar x derajat)
+    def move(self, front, right, down):
+        # moveBy(dX, dY, dZ, dPsi, _timeout=10, _no_expect=False, _float_tol=(1e-07, 1e-09))
+        # dX (float)   – Wanted displacement along the FRONT axis [m]
+        # dY (float)   – Wanted displacement along the RIGHT axis [m]
+        # dZ (float)   – Wanted displacement along the DOWN axis [m]
+        # dPsi (float) – Wanted rotation of heading [rad]
+
         if self.state == DroneState.TAKEOFF:
             assert self.drone(
-                moveBy(dist, 0, altitude, 0)
+                moveBy(front, right, down, 0)
                 >> FlyingStateChanged(state="hovering", _timeout=10)
             ).wait().success()
     
