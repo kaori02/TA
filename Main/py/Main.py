@@ -1,7 +1,7 @@
 # Skrip untuk ambil data LiDAR, logika, dan kirim perintah ke drone
 # - Ambil data dari kedua LiDAR sekaligus algonya pake script py
 
-# from drone.compass import Compass
+from drone.compass import Compass
 from drone.drone import Drone
 from drone.droneState import DroneState
 from LidarReader import LidarReader
@@ -14,7 +14,7 @@ import time
 # IP drone untuk koneksi
 DRONE_IP = "192.168.42.1"
 drone = Drone(DRONE_IP)
-# compass = Compass()
+compass = Compass()
 
 modeHome = False
 switch = False
