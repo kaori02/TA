@@ -199,6 +199,22 @@ def main():
       sys.exit
 
 if __name__ == "__main__":
+  # logging.basicConfig(filename="ObstacleAvoidanceLog.log", level=logging.DEBUG, format=)
+  logger = logging.getLogger("ObstacleAvoidanceLog")
+  logger.setLevel(level=logging.DEBUG)
+
+  ch = logging.StreamHandler()
+  fh = logging.FileHandler("ObstacleAvoidanceLog.log")
+
+  formatter = logging.Formatter('%(asctime)s - %(levelname)s: %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
+
+  ch.setFormatter(formatter)
+  fh.setFormatter(formatter)
+
+  logger.addHandler(ch)
+  logger.addHandler(fh)
+
+  logger.info("start")
   # main()
   try:
     lidar_0x44 = LidarReader("./bin/0x44_llv3.out")
