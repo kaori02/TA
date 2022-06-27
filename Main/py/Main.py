@@ -5,12 +5,13 @@ from drone.compass import Compass
 from drone.drone import Drone
 from drone.droneState import DroneState
 from LidarReader import LidarReader
+from Log import Log
 from ObstacleAvoidance.ObstacleAvoidance import ObstacleAvoidance 
 from ObstacleAvoidance.ObstacleAvoidanceState import ObstacleAvoidanceState as obsAvoState
-import logging
 import sys
 import time
 
+logger = Log()
 # IP drone untuk koneksi
 DRONE_IP = "192.168.42.1"
 drone = Drone(DRONE_IP)
@@ -54,12 +55,12 @@ def obstacle_avoidance(left_data, right_data, obs_avo):
   elif obs_avo_state == obsAvoState.FOUND:
     # hold selama wait_time
     if obs_avo.get_timer_hold_status():
-      print("timer on")
+      logger.info("timer on")
       t_end = time.time() + wait_time
       obs_avo.set_timer_hold_status(False)
     
     if time.time() < t_end:
-      print("remaining HOVERING time:" + str(t_end-time.time()))
+      logger.info("remaining HOVERING time:" + str(t_end-time.time()))
 
       # hovering disini
       obs_avo.set_direction(obs_avo.DirectionState.HOLD, obs_avo.DirectionState.HOLD)
@@ -103,7 +104,7 @@ def main():
 
     left_data  = lidar_0x44.readData()
     right_data = lidar_0x62.readData()
-    print("[LEFT] " + str(left_data) + "\t" + "[RIGHT] " + str(right_data))
+    logger.info("[LEFT] " + str(left_data) + "\t" + "[RIGHT] " + str(right_data))
 
     if modeHome == True and switch == False:
       # mengecek apakah drone ada di mode kembali ke titik home dan apakah titik tujuan sudah ditukar,
@@ -145,7 +146,7 @@ def main():
           drone.atDest = True
         if drone.atDest == True:
           drone.land()
-          print("Landing...")
+          logger.info("Landing...")
           # drone berganti menjadi mode home dan diperintahkan untuk terbang ke titik asal
           if modeHome == True:
             break
@@ -195,26 +196,10 @@ def main():
       del obs_avo
       del lidar_0x44
       del lidar_0x62
-      print("interrupt")
+      logger.info("interrupt")
       sys.exit
 
 if __name__ == "__main__":
-  # logging.basicConfig(filename="ObstacleAvoidanceLog.log", level=logging.DEBUG, format=)
-  logger = logging.getLogger("ObstacleAvoidanceLog")
-  logger.setLevel(level=logging.DEBUG)
-
-  ch = logging.StreamHandler()
-  fh = logging.FileHandler("ObstacleAvoidanceLog.log")
-
-  formatter = logging.Formatter('%(asctime)s - %(levelname)s: %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
-
-  ch.setFormatter(formatter)
-  fh.setFormatter(formatter)
-
-  logger.addHandler(ch)
-  logger.addHandler(fh)
-
-  logger.info("start")
   # main()
   try:
     lidar_0x44 = LidarReader("./bin/0x44_llv3.out")
@@ -225,12 +210,10 @@ if __name__ == "__main__":
     wait_time = 5
     
     while True:
-      # print(lidar_0x44.readName() + "\t" + lidar_0x44.readData())
-      # print(lidar_0x62.readName() + "\t" + lidar_0x62.readData())
       # TODO: cari tau seberapa cepat drone bisa jalan
       left_data  = lidar_0x44.readData()
       right_data = lidar_0x62.readData()
-      print("[LEFT] " + str(left_data) + "\t" + "[RIGHT] " + str(right_data))
+      logger.info("[LEFT] " + str(left_data) + "\t" + "[RIGHT] " + str(right_data))
 
       obs_avo_state = obs_avo.get_state()
       
@@ -242,12 +225,12 @@ if __name__ == "__main__":
       elif obs_avo_state == obsAvoState.FOUND:
         # hold selama wait_time
         if obs_avo.get_timer_hold_status():
-          print("timer on")
+          logger.info("timer on")
           t_end = time.time() + wait_time
           obs_avo.set_timer_hold_status(False)
         
         if time.time() < t_end:
-          print("remaining HOVERING time:" + str(t_end-time.time()))
+          logger.info("remaining HOVERING time:" + str(t_end-time.time()))
 
           # hovering disini
           obs_avo.set_direction(obs_avo.DirectionState.HOLD, obs_avo.DirectionState.HOLD)
@@ -276,5 +259,5 @@ if __name__ == "__main__":
     del obs_avo
     del lidar_0x44
     del lidar_0x62
-    print("interrupt")
+    logger.info("interrupt")
     sys.exit

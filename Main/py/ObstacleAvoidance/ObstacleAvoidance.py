@@ -2,7 +2,10 @@ from collections import Counter
 from enum import Enum
 from ObstacleAvoidance.ObstacleAvoidanceState import ObstacleAvoidanceState
 from LidarReader import LidarReader
+from Log import Log
 import time
+
+logger = Log()
 
 class ObstacleAvoidance:
   class DirectionState(Enum):
@@ -68,7 +71,7 @@ class ObstacleAvoidance:
 
   def continuous_obs_detection(self, left_data, right_data):
     if (left_data <= self.threshold or right_data <= self.threshold):
-      print("OBS FOUND")
+      logger.info("OBS FOUND")
       self.set_state(ObstacleAvoidanceState.FOUND)
       self.set_direction(self.DirectionState.HOLD, self.DirectionState.HOLD)
       self.set_timer_hold_status(True)
@@ -80,15 +83,15 @@ class ObstacleAvoidance:
     """
     if (left_data == right_data) or (left_data <= self.threshold and right_data <= self.threshold):
       # ke atas
-      print("OBS FRONT")
+      logger.info("OBS FRONT")
       self.set_direction(self.DirectionState.UP, self.DirectionState.HOLD)
     
     elif left_data < right_data:
-      print("OBS LEFT")
+      logger.info("OBS LEFT")
       self.set_direction(self.DirectionState.HOLD, self.DirectionState.RIGHT)
     
     elif right_data < left_data:
-      print("OBS RIGHT")
+      logger.info("OBS RIGHT")
       self.set_direction(self.DirectionState.HOLD, self.DirectionState.LEFT)
     
     
@@ -104,19 +107,19 @@ class ObstacleAvoidance:
     current_direction = self.get_direction()
     
     if self.get_timer_hold_status():
-      print("timer avoid ON")
+      logger.info("timer avoid ON")
       self.t_end = time.time() + 5   # max manuver 5 detik
       self.set_timer_hold_status(False)
 
     if self.is_maju:
-      print("time to maju")
+      logger.info("time to maju")
       self.t_maju = time.time() + 2
       self.is_maju = False
 
     if time.time() < self.t_maju:
-      print("remaining MAJU time :" + str(self.t_maju-time.time()))
+      logger.info("remaining MAJU time :" + str(self.t_maju-time.time()))
       # maju disini
-      print("FRONT CLEAR, Maju 2 detik")
+      logger.info("FRONT CLEAR, Maju 2 detik")
       self.set_direction(self.DirectionState.HOLD, self.DirectionState.FRONT)
       
       # kalo selama maju dia nemu obs, ikutin aturan main si continuous_obs_detection
@@ -137,18 +140,18 @@ class ObstacleAvoidance:
     
     ########### disini manuver avoidnya ###########
     elif time.time() < self.t_end:
-      print("remaining AVOID time :" + str(self.t_end-time.time()))
+      logger.info("remaining AVOID time :" + str(self.t_end-time.time()))
       
       # disini gerak manuver avoidnya
       if current_direction[1] == self.DirectionState.RIGHT:
-        print("kanan ngab")
+        logger.info("kanan ngab")
       elif current_direction[1] == self.DirectionState.LEFT:
-        print("kiri ngab")
+        logger.info("kiri ngab")
       elif current_direction[0] == self.DirectionState.UP:
-        print("naik ngab")
+        logger.info("naik ngab")
     else:
       # kalo ga aman2, hold bandingin lagi
-      print("BINGUNG")
+      logger.info("BINGUNG")
       self.continuous_obs_detection(left_data, right_data)
   
   def back(self, left_data, right_data):
@@ -161,9 +164,9 @@ class ObstacleAvoidance:
     self.continuous_obs_detection(left_data, right_data)
     # kalo setelah deteksi doi ga berubah jadi FOUND, baru lanjut
     if self.get_state() != ObstacleAvoidanceState.FOUND:
-      print("back")
+      logger.info("back")
       if self.is_counting:
-        print("counting")
+        logger.info("counting")
         self.v_counter = Counter(self.v_dir_done)
         self.h_counter = Counter(self.h_dir_done)
         self.is_counting = False
@@ -186,12 +189,12 @@ class ObstacleAvoidance:
 
       # setelah nentuin arah, menuju arah itu dengan waktunya dibatesin max 3 detik tiap arah
       if self.get_timer_hold_status():
-        print("timer BACK ON")
+        logger.info("timer BACK ON")
         self.t_end = time.time() + min(3 * max(v_back_cnt, h_back_cnt), 6)
         self.set_timer_hold_status(False)
 
       if time.time() < self.t_end:
-        print("remaining BACK time :" + str(self.t_end-time.time()))
+        logger.info("remaining BACK time :" + str(self.t_end-time.time()))
         self.set_direction(self.v_back, self.h_back)
       
       elif (self.t_end < time.time()) and (self.t_end != -99.0) and (left_data > self.threshold) and (right_data > self.threshold):
