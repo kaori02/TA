@@ -102,8 +102,8 @@ def main():
     global modeHome
     global switch
 
-    left_data  = lidar_0x44.readData()
-    right_data = lidar_0x62.readData()
+    left_data  = lidar_0x62.readData()
+    right_data = lidar_0x44.readData()
     logger.info("[LEFT] " + str(left_data) + "\t" + "[RIGHT] " + str(right_data))
 
     if modeHome == True and switch == False:
@@ -211,8 +211,8 @@ if __name__ == "__main__":
     
     while True:
       # TODO: cari tau seberapa cepat drone bisa jalan
-      left_data  = lidar_0x44.readData()
-      right_data = lidar_0x62.readData()
+      left_data  = lidar_0x62.readData()
+      right_data = lidar_0x44.readData()
       logger.info("[LEFT] " + str(left_data) + "\t" + "[RIGHT] " + str(right_data))
 
       obs_avo_state = obs_avo.get_state()
