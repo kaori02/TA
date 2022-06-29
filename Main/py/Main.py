@@ -1,6 +1,3 @@
-# Skrip untuk ambil data LiDAR, logika, dan kirim perintah ke drone
-# - Ambil data dari kedua LiDAR sekaligus algonya pake script py
-
 from drone.compass import Compass
 from drone.drone import Drone
 from drone.droneState import DroneState
@@ -20,8 +17,8 @@ compass = Compass()
 modeHome = False
 switch = False
 
-pointDestination = [-6.557045041042469,106.73229372868889]
-pointHome = [-6.556972833333994,106.73229416666666]
+pointDestination = [-7.2889521, 112.7872948]
+pointHome = [-7.2886677,112.7873511]
 initDistance = -999.0
 totalDistance = 0
 
@@ -199,8 +196,7 @@ def main():
       logger.info("interrupt")
       sys.exit
 
-if __name__ == "__main__":
-  # main()
+def test():
   try:
     lidar_0x44 = LidarReader("./bin/0x44_llv3.out")
     lidar_0x62 = LidarReader("./bin/0x62_llv3.out")
@@ -261,3 +257,6 @@ if __name__ == "__main__":
     del lidar_0x62
     logger.info("interrupt")
     sys.exit
+
+if __name__ == "__main__":
+  main()

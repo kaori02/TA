@@ -13,7 +13,7 @@ class Drone():
     r2 = 6371008.77141
     atDest = False
     # log untuk mencatat koordinat titik takeoff dan landing drone
-    FILE = "/home/pi/code/drone/research/log/coordinate/coordinate.txt"
+    FILE = "/home/kaoripi/TA/Main/coordinate/coordinate.txt"
     
     def __init__(self, ip):
         self.DRONE_IP = ip

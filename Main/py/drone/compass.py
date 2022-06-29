@@ -6,7 +6,7 @@ class Compass:
     # matrix kalibrasi kompas
     sensor.calibration = [[1.0927315541313796, -0.03261210357972172, -763.7447965701454], [-0.03261210357972172, 1.011469119760332, -149.43578036044028], [0.0, 0.0, 1.0]]
     # untuk menyesuaikan posisi utara yang ditangkap kompas dengan posisi utara sebenarnya
-    sensor.declination = -81
+    sensor.declination = -106
 
     def formula(self, x):
         # fungsi kalibrasi kompas agar hasil ukur lebih mendekati nilai sebenarnya
