@@ -161,6 +161,7 @@ def main():
           if obs_avo.get_state() == obsAvoState.CLEAR:
             checkDroneBearing(abs(locBearing))
             drone.moveTo(distance, 0.0)
+            totalDistance = totalDistance - distance
           else:
             v_dir, h_dir = obs_avo.get_direction()
             displacement = 0.2    # 20 cm
@@ -187,8 +188,8 @@ def main():
               h_dis = 0
 
             drone.move(f_dis, h_dis, v_dis)
+            totalDistance = totalDistance - distance
 
-          totalDistance = totalDistance - distance
     except KeyboardInterrupt:
       del obs_avo
       del lidar_0x44
