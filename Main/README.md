@@ -1,4 +1,4 @@
-# Main
+# Main (One LiDAR Usage)
 
 This is the directory where you want to run the porgram.
 
@@ -13,9 +13,7 @@ Make sure that `Main` directory is your current working directory before running
 
 ```sh
 > source ~/parrot-groundsdk/products/olympe/linux/env/shell
-> chmod +x make_all.sh
-> chmod +x make_run.sh
-> ./make_all.sh
+> make
 > python3 py/Main.py
 ```
 

@@ -18,6 +18,10 @@ compass = Compass()
 modeHome = False
 switch = False
 
+# 1 LiDAR usage
+left_lidar  = False
+right_lidar = False
+
 with open("loc.json") as f:
   dataJSON = json.load(f)
 
@@ -103,8 +107,13 @@ def main():
     global modeHome
     global switch
 
-    left_data  = lidar_0x62.readData()
-    right_data = lidar_0x44.readData()
+    if left_lidar:
+      left_data  = lidar_0x62.readData()
+      right_data = 2000
+    if right_lidar:
+      left_data  = 2000
+      right_data = lidar_0x62.readData()
+
     logger.info("[LEFT] " + str(left_data) + "\t" + "[RIGHT] " + str(right_data))
 
     if modeHome == True and switch == False:
