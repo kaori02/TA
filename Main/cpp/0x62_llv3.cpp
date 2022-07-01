@@ -55,6 +55,6 @@ int main()
         myLidarLite.takeRange();
         distance = myLidarLite.readDistance();
 
-        printf("%4d\n", distance);
+        printf("%d\n", distance);
     }
 }

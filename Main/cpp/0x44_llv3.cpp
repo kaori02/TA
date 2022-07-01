@@ -54,5 +54,5 @@ int main()
     myLidarLite.takeRange(i2cSecondaryAddr);
     distance      = myLidarLite.readDistance(i2cSecondaryAddr);
 
-    printf("%4d\n", distance);
+    printf("%d\n", distance);
 }

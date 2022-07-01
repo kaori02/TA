@@ -5,6 +5,7 @@ from LidarReader import LidarReader
 from Log import Log
 from ObstacleAvoidance.ObstacleAvoidance import ObstacleAvoidance 
 from ObstacleAvoidance.ObstacleAvoidanceState import ObstacleAvoidanceState as obsAvoState
+import json
 import sys
 import time
 
@@ -17,8 +18,12 @@ compass = Compass()
 modeHome = False
 switch = False
 
-pointDestination = [-7.2889521, 112.7872948]
-pointHome = [-7.2886677,112.7873511]
+with open("loc.json") as f:
+  dataJSON = json.load(f)
+
+pointDestination = dataJSON["Dest"]
+pointHome        = dataJSON["Home"]
+
 initDistance = -999.0
 totalDistance = 0
 
@@ -42,7 +47,7 @@ def switchDestination():
   pointDestination[0] = pointHome[0]
   pointDestination[1] = pointHome[1]
 
-def obstacle_avoidance(left_data, right_data, obs_avo):
+def obstacle_avoidance(left_data, right_data, obs_avo, wait_time, t_end):
   obs_avo_state = obs_avo.get_state()
   ########### CLEAR ###########
   if obs_avo_state == obsAvoState.CLEAR:
@@ -82,7 +87,6 @@ def obstacle_avoidance(left_data, right_data, obs_avo):
   elif obs_avo_state == obsAvoState.BACK:
     obs_avo.back(left_data, right_data)
 
-
 def main():
   drone.connectToDrone()
   
@@ -117,10 +121,12 @@ def main():
         drone.moveTo(0.0, -0.5)
       else:
         distance, locBearing = drone.calculateDistance(pointDestination[0], pointDestination[1])
+        logger.info("distance: "+str(distance))
         while distance < 0.0:
           # dilakukan pengecekan untuk GPS drone, bila gps tidak menangkap lokasi maka akan terjebak di
           # loop ini sampai mendapatkan lokasi
           distance, locBearing = drone.calculateDistance(pointDestination[0], pointDestination[1])
+          logger.warning("masuk loop gps tidak menangkap lokasi, distance: "+ str(distance))
           time.sleep(2)
         if initDistance < 0:
           # pada awal eksekusi initDistance akan diset -999 yang menandakan drone baru diperintahkan untuk
@@ -154,26 +160,39 @@ def main():
             modeHome = True
             break
         else:
+          # checkDroneBearing(abs(locBearing))
+          # drone.moveTo(distance, 0.0)
+          # totalDistance = totalDistance - distance
+
           # disini ngecek obstacle
-          obstacle_avoidance(left_data, right_data, obs_avo)
+          logger.info("[DETEKSI DIMULAI] distance: "+str(distance))
+
+          obstacle_avoidance(left_data, right_data, obs_avo, wait_time, t_end)
+          v_dir, h_dir = obs_avo.get_direction()
+          displacement = 0.2    # 20 cm
+          
+          v_dis = displacement
+          h_dis = displacement
+          f_dis = 0
 
           # cek drone bearing cuma dilakukan kalo dia CLEAR
           if obs_avo.get_state() == obsAvoState.CLEAR:
-            checkDroneBearing(abs(locBearing))
-            drone.moveTo(distance, 0.0)
-            totalDistance = totalDistance - distance
+            f_dis = distance
+            h_dis = 0
+            v_dis = 0
           else:
-            v_dir, h_dir = obs_avo.get_direction()
-            displacement = 0.2    # 20 cm
-            
-            v_dis = displacement
-            h_dis = displacement
-            f_dis = 0
+            logger.warning("PATH NOT CLEAR")
             
             # HOLD = 0
             # FRONT
             if h_dir == obs_avo.DirectionState.FRONT:
               f_dis = displacement
+
+            # LEFT  = -right
+            if h_dir == obs_avo.DirectionState.LEFT:
+              h_dis = -h_dis
+            elif h_dir == obs_avo.DirectionState.HOLD:
+              h_dis = 0
 
             # UP    = -down
             if v_dir == obs_avo.DirectionState.UP:
@@ -181,23 +200,20 @@ def main():
             elif v_dir == obs_avo.DirectionState.HOLD:
               v_dis = 0
             
-            # LEFT  = -right
-            if h_dir == obs_avo.DirectionState.LEFT:
-              h_dis = -h_dis
-            elif h_dir == obs_avo.DirectionState.HOLD:
-              h_dis = 0
-
-            drone.move(f_dis, h_dis, v_dis)
-            totalDistance = totalDistance - distance
+          checkDroneBearing(abs(locBearing))
+          drone.ext_move(f_dis, h_dis, v_dis)
+          totalDistance = totalDistance - distance
 
     except KeyboardInterrupt:
+      drone.land()
+      time.sleep(5)
       del obs_avo
       del lidar_0x44
       del lidar_0x62
       logger.info("interrupt")
       sys.exit
 
-def test():
+def testLiDAR():
   try:
     lidar_0x44 = LidarReader("./bin/0x44_llv3.out")
     lidar_0x62 = LidarReader("./bin/0x62_llv3.out")
@@ -261,3 +277,4 @@ def test():
 
 if __name__ == "__main__":
   main()
+  # testLiDAR()

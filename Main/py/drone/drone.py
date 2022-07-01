@@ -3,10 +3,14 @@ import olympe
 from drone.droneState import DroneState
 from olympe.messages.ardrone3.PilotingSettings import MaxTilt
 from olympe.messages.ardrone3.Piloting import TakeOff, moveBy, Landing
+from olympe.messages.move import extended_move_by
 from olympe.messages.ardrone3.PilotingState import FlyingStateChanged
 from olympe.messages.ardrone3.GPSSettingsState import HomeChanged
 from olympe.messages.ardrone3.PilotingState import PositionChanged
 from olympe.messages.ardrone3.GPSSettingsState import GPSFixStateChanged
+from Log import Log
+
+logger = Log()
 
 class Drone():
     state = DroneState.LAND
@@ -49,6 +53,22 @@ class Drone():
             ).wait().success()
             self.state = DroneState.TAKEOFF
             self.write("Takeoff...\n")
+
+    def ext_move(self, front, right, down):
+        # extended_move_by(d_x, d_y, d_z, d_psi, max_horizontal_speed, max_vertical_speed, max_yaw_rotation_speed, _timeout=10, _no_expect=False, _float_tol=(1e-07, 1e-09))
+        # d_x (float) – Wanted displacement along the FRONT axis [m]
+        # d_y (float) – Wanted displacement along the RIGHT axis [m]
+        # d_z (float) – Wanted displacement along the DOWN axis [m]
+        # d_psi (float) – Wanted ROTATION of heading [rad]
+        # max_horizontal_speed (float) – Maximum horizontal speed in m/s.
+        # max_vertical_speed (float) – Maximum vertical speed in m/s.
+        # max_yaw_rotation_speed (float) – Maximum yaw rotation speed in degrees/s.
+
+        if self.state == DroneState.TAKEOFF:
+            assert self.drone(
+                extended_move_by(front, right, down, 0, 0.2, 0.2, 0)
+                >> FlyingStateChanged(state="hovering", _timeout=10)
+            ).wait().success()
 
     def move(self, front, right, down):
         # moveBy(dX, dY, dZ, dPsi, _timeout=10, _no_expect=False, _float_tol=(1e-07, 1e-09))
@@ -119,6 +139,7 @@ class Drone():
        
         if start[0] != 500.0 and start[1] != 500.0:
             self.write("{},{}\n".format(start[0], start[1]))
+            logger.warning("{},{}\n".format(start[0], start[1]))
 
         distance = self.vincenty_formula(radians(start[0]), radians(start[1]), radians(dest[0]), radians(dest[1]))
         bearing = self.calculateBearing(start, dest)
