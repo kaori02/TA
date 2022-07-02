@@ -285,5 +285,5 @@ def testLiDAR():
     sys.exit
 
 if __name__ == "__main__":
-  main()
-  # testLiDAR()
+  # main()
+  testLiDAR()
