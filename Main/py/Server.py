@@ -46,16 +46,19 @@ if __name__ == '__main__':
 
         if received.endswith("vincenty") or received.endswith("haversine"):
           splitted_data = received.split()
-          lat = splitted_data[0]
-          long = splitted_data[1]
+          destLat = splitted_data[0]
+          destLon = splitted_data[1]
+          currLat = splitted_data[2]
+          currLon = splitted_data[3]
 
-          print("splitted_data, lat, long:")
-          print(str(splitted_data) + " " + str(lat) + " " + str(long))
+          print("destLat, destLon, currLat, currLon")
+          print(str(destLat) + " " + str(destLon) + " " + str(currLat) + " " + str(currLon))
 
           with open("loc.json") as f:
             dataJSON = json.load(f)
           
-          dataJSON["Dest"] = [float(lat), float(long)]
+          dataJSON["Dest"] = [float(destLat), float(destLon)]
+          dataJSON["Home"] = [float(currLat), float(currLon)]
 
           with open("loc.json", "w") as f:
             json.dump(dataJSON, f)
