@@ -5,6 +5,7 @@ from LidarReader import LidarReader
 from Log import Log
 from ObstacleAvoidance.ObstacleAvoidance import ObstacleAvoidance 
 from ObstacleAvoidance.ObstacleAvoidanceState import ObstacleAvoidanceState as obsAvoState
+from Server import Servers
 import json
 import sys
 import time
@@ -92,7 +93,7 @@ def main():
   
   lidar_0x44 = LidarReader("./bin/0x44_llv3.out")
   lidar_0x62 = LidarReader("./bin/0x62_llv3.out")
-  obs_threshold = 100     # 100 cm
+  obs_threshold = 150     # 150 cm
   obs_avo = ObstacleAvoidance(obs_threshold)
   t_end = -99.0
   wait_time = 5
@@ -105,6 +106,11 @@ def main():
 
     left_data  = lidar_0x62.readData()
     right_data = lidar_0x44.readData()
+    
+    # not detecting anything
+    if left_data  <= 1: left_data  = 8000
+    if right_data <= 1: right_data = 8000
+
     logger.info("[LEFT] " + str(left_data) + "\t" + "[RIGHT] " + str(right_data))
 
     if modeHome == True and switch == False:
@@ -226,6 +232,11 @@ def testLiDAR():
       # TODO: cari tau seberapa cepat drone bisa jalan
       left_data  = lidar_0x62.readData()
       right_data = lidar_0x44.readData()
+
+      # not detecting anything
+      if left_data  <= 1: left_data  = 8000
+      if right_data <= 1: right_data = 8000
+      
       logger.info("[LEFT] " + str(left_data) + "\t" + "[RIGHT] " + str(right_data))
 
       obs_avo_state = obs_avo.get_state()
@@ -276,5 +287,44 @@ def testLiDAR():
     sys.exit
 
 if __name__ == "__main__":
+  server = Servers()
+  hasDataFromAndro = False
+  while True:
+    if hasDataFromAndro:
+      break
+    
+    logger.info("waiting for location data from android App...")
+    received = server.receive()
+
+    if received.endswith("vincenty") or received.endswith("haversine"):
+      splitted_data = received.split()
+      destLat = splitted_data[0]
+      destLon = splitted_data[1]
+      currLat = splitted_data[2]
+      currLon = splitted_data[3]
+
+      logger.info("destLat, destLon, currLat, currLon")
+      logger.info(str(destLat) + " " + str(destLon) + " " + str(currLat) + " " + str(currLon))
+
+      with open("loc.json") as f:
+        dataJSON = json.load(f)
+      
+      dataJSON["Dest"] = [float(destLat), float(destLon)]
+      dataJSON["Home"] = [float(currLat), float(currLon)]
+
+      with open("loc.json", "w") as f:
+        json.dump(dataJSON, f)
+
+      time.sleep(0.5)
+      hasDataFromAndro = True
+
+  with open("loc.json") as f:
+    dataJSON = json.load(f)
+
+  pointDestination = dataJSON["Dest"]
+  pointHome        = dataJSON["Home"]
+  
+  logger.info("INIT MAIN PROGRAM")
+  time.sleep(1)
   # main()
   testLiDAR()

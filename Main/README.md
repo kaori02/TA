@@ -34,13 +34,9 @@ This is the directory where you want to run the program.
   > chmod +x make_all.sh
   > chmod +x make_run.sh
   > ./make_all.sh
-  > python3 py/Server.py
-  ```
-- Get location via app
-- Run `Main` program
-  ```sh
   > python3 py/Main.py
   ```
+- Get location via android app
 
 ## Testing Checklist
 - [ ] Callibrate compass
