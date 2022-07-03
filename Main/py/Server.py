@@ -1,7 +1,5 @@
-from time import sleep
 import bluetooth
-import sys
-import json
+
 BUFFER = 1024
     
 class Servers:
@@ -37,33 +35,3 @@ class Servers:
         self.client.close()
         self.sock.close()
         return
-
-if __name__ == '__main__':
-    server = Servers()
-    while True:
-      try:
-        received = server.receive()
-
-        if received.endswith("vincenty") or received.endswith("haversine"):
-          splitted_data = received.split()
-          destLat = splitted_data[0]
-          destLon = splitted_data[1]
-          currLat = splitted_data[2]
-          currLon = splitted_data[3]
-
-          print("destLat, destLon, currLat, currLon")
-          print(str(destLat) + " " + str(destLon) + " " + str(currLat) + " " + str(currLon))
-
-          with open("loc.json") as f:
-            dataJSON = json.load(f)
-          
-          dataJSON["Dest"] = [float(destLat), float(destLon)]
-          dataJSON["Home"] = [float(currLat), float(currLon)]
-
-          with open("loc.json", "w") as f:
-            json.dump(dataJSON, f)
-
-        sleep(0.5)
-      except KeyboardInterrupt:
-        sys.exit
-
