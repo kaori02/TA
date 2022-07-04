@@ -32,9 +32,9 @@ This is the directory where you want to run the program.
   ```sh
   > source ~/parrot-groundsdk/products/olympe/linux/env/shell
   > chmod +x make_all.sh
-  > chmod +x make_run.sh
+  > chmod +x run.sh
   > ./make_all.sh
-  > python3 py/Main.py
+  > ./run.sh
   ```
 - Get location via android app
 

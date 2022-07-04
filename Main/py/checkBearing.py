@@ -3,7 +3,7 @@ from time import sleep
 
 sensor = py_qmc5883l.QMC5883L()
 sensor.calibration = [[1.0927315541313796, -0.03261210357972172, -763.7447965701454], [-0.03261210357972172, 1.011469119760332, -149.43578036044028], [0.0, 0.0, 1.0]]
-sensor.declination = -106
+sensor.declination = -99
 
 while True:
   bearing = sensor.get_bearing()

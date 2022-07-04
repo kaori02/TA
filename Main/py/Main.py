@@ -18,6 +18,7 @@ compass = Compass()
 
 modeHome = False
 switch = False
+updateLoc = False
 
 with open("loc.json") as f:
   dataJSON = json.load(f)
@@ -206,8 +207,12 @@ def main():
             elif v_dir == obs_avo.DirectionState.HOLD:
               v_dis = 0
             
-          checkDroneBearing(abs(locBearing))
+          if obs_avo.get_state() == obsAvoState.CLEAR:
+            checkDroneBearing(abs(locBearing))
+
           drone.ext_move(f_dis, h_dis, v_dis)
+          # drone.land()
+          # drone.move(f_dis, h_dis, v_dis)
           totalDistance = totalDistance - distance
 
     except KeyboardInterrupt:
@@ -287,44 +292,46 @@ def testLiDAR():
     sys.exit
 
 if __name__ == "__main__":
-  server = Servers()
-  hasDataFromAndro = False
-  while True:
-    if hasDataFromAndro:
-      break
-    
-    logger.info("waiting for location data from android App...")
-    received = server.receive()
-
-    if received.endswith("vincenty") or received.endswith("haversine"):
-      splitted_data = received.split()
-      destLat = splitted_data[0]
-      destLon = splitted_data[1]
-      currLat = splitted_data[2]
-      currLon = splitted_data[3]
-
-      logger.info("destLat, destLon, currLat, currLon")
-      logger.info(str(destLat) + " " + str(destLon) + " " + str(currLat) + " " + str(currLon))
-
-      with open("loc.json") as f:
-        dataJSON = json.load(f)
+  if updateLoc:
+    server = Servers()
+    hasDataFromAndro = False
+    while True:
+      if hasDataFromAndro:
+        break
       
-      dataJSON["Dest"] = [float(destLat), float(destLon)]
-      dataJSON["Home"] = [float(currLat), float(currLon)]
+      logger.info("waiting for location data from android App...")
+      received = server.receive()
 
-      with open("loc.json", "w") as f:
-        json.dump(dataJSON, f)
+      if received.endswith("vincenty") or received.endswith("haversine"):
+        splitted_data = received.split()
+        destLat = splitted_data[0]
+        destLon = splitted_data[1]
+        currLat = splitted_data[2]
+        currLon = splitted_data[3]
 
-      time.sleep(0.5)
-      hasDataFromAndro = True
+        logger.info("destLat, destLon, currLat, currLon")
+        logger.info(str(destLat) + " " + str(destLon) + " " + str(currLat) + " " + str(currLon))
 
-  with open("loc.json") as f:
-    dataJSON = json.load(f)
+        with open("loc.json") as f:
+          dataJSON = json.load(f)
+        
+        dataJSON["Dest"] = [float(destLat), float(destLon)]
+        dataJSON["Home"] = [float(currLat), float(currLon)]
 
-  pointDestination = dataJSON["Dest"]
-  pointHome        = dataJSON["Home"]
-  
-  logger.info("INIT MAIN PROGRAM")
-  time.sleep(1)
-  # main()
-  testLiDAR()
+        with open("loc.json", "w") as f:
+          json.dump(dataJSON, f)
+
+        time.sleep(0.5)
+        hasDataFromAndro = True
+
+    with open("loc.json") as f:
+      dataJSON = json.load(f)
+
+    pointDestination = dataJSON["Dest"]
+    pointHome        = dataJSON["Home"]
+    
+    logger.info("INIT MAIN PROGRAM")
+    time.sleep(1)
+
+  main()
+  # testLiDAR()
