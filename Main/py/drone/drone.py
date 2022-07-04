@@ -66,7 +66,7 @@ class Drone():
 
         if self.state == DroneState.TAKEOFF:
             assert self.drone(
-                extended_move_by(front, right, down, 0.0, 0.7, 0.7, 0.5)
+                extended_move_by(front, right, down, 0.0, 0.7, 0.7, 0.7)
                 >> FlyingStateChanged(state="hovering", _timeout=10)
             ).wait().success()
 

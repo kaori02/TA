@@ -142,16 +142,16 @@ def main():
           # jarak total yang harus ditempuh drone untuk sampai ke titik tujuan, didapatkan sekali saat 
           # drone pertama kali menghitung jarak titik drone dengan titik tujuan
           totalDistance = distance
-        if totalDistance > 10.0:
+        if totalDistance > 5.0:
           # untuk keamanan (supaya drone tidak menabrak pohon dsb, maka jarak tempuh drone dibatasi 
           # maksimal 10 meter)
-          totalDistance = 10.0
-          distance = 10.0
+          totalDistance = 5.0
+          distance = 5.0
         if distance > totalDistance and totalDistance >= 0:
           # untuk menghindari drone tidak pernah turun karena hasil perhitungan gps tidak pernah sampai 0,
           # maka totalDistance dijadikan acuan
           distance = totalDistance
-        if distance <= 0.5 or totalDistance <= 0.0:
+        if distance <= 0.2 or totalDistance <= 0.0:
           # drone sampai di titik tujuan
           drone.atDest = True
         if drone.atDest == True:
@@ -209,6 +209,7 @@ def main():
             
           if obs_avo.get_state() == obsAvoState.CLEAR:
             checkDroneBearing(abs(locBearing))
+          # checkDroneBearing(abs(locBearing))
 
           drone.ext_move(f_dis, h_dis, v_dis)
           # drone.land()
