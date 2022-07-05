@@ -36,8 +36,6 @@ t_end = -99.0
 wait_time = 5
 end_loop = False
 
-left_q  = []
-right_q = []
 
 def checkDroneBearing(locBearing):
   # fungsi mengecek bearing drone, bila sudah sesuai dengan titik tujuan maka akan keluar dari loop 
@@ -53,10 +51,17 @@ def setDroneHeading(droneBearing, locBearing):
   deltaBearing = locBearing - droneBearing
   drone.rotate(deltaBearing)
 
-def obstacle_avoidance(left_q, right_q):
-  while (not end_loop) and (len(left_q) > 0) and (len(right_q) > 0):
-    left_data = left_q.pop(0)
-    right_data = right_q.pop(0)
+def obstacle_avoidance():
+  global obs_avo
+  while not end_loop:
+    left_data  = lidar_0x62.readData()
+    right_data = lidar_0x44.readData()
+
+    # not detecting anything
+    if left_data  <= 1: left_data  = 8000
+    if right_data <= 1: right_data = 8000
+
+    logger.info("[LEFT] " + str(left_data) + "\t" + "[RIGHT] " + str(right_data))
 
     obs_avo_state = obs_avo.get_state()
     ########### CLEAR ###########
@@ -100,6 +105,9 @@ def obstacle_avoidance(left_q, right_q):
 
 def droneProcess():
   while True:
+    global initDistance
+    global totalDistance
+    global obs_avo
     try:
       if drone.state == DroneState.LAND:
         # mengecek bila drone sedang mendarat maka akan diperintahkan untuk takeoff
@@ -161,6 +169,7 @@ def droneProcess():
           # cek drone bearing cuma dilakukan kalo dia CLEAR
           obs_state = obs_avo.get_state()
           if obs_state == obsAvoState.CLEAR:
+            logger.warning("PATH CLEAR")
             f_dis = distance
             h_dis = 0
             v_dis = 0
@@ -200,19 +209,6 @@ def droneProcess():
       logger.info("interrupt")
       sys.exit
 
-def lidarReadData(left_q, right_q):
-  while not end_loop:
-    left_data  = lidar_0x62.readData()
-    right_data = lidar_0x44.readData()
-
-    # not detecting anything
-    if left_data  <= 1: left_data  = 8000
-    if right_data <= 1: right_data = 8000
-
-    logger.info("[LEFT] " + str(left_data) + "\t" + "[RIGHT] " + str(right_data))
-
-    left_q.append(left_data)
-    right_q.append(right_data)
 
 if __name__ == "__main__":
   if updateLoc:
@@ -262,16 +258,14 @@ if __name__ == "__main__":
   # disini threading
   # lock = threading.Lock()
 
-  tl = threading.Thread(target=lidarReadData, args=[left_q, right_q])
-  to = threading.Thread(target=obstacle_avoidance, args=[left_q, right_q])
+  to = threading.Thread(target=obstacle_avoidance)
   td = threading.Thread(target=droneProcess)
 
-  tl.daemon = True
-  to.daemon = True
+  # tl.daemon = True
+  # to.daemon = True
   # td.daemon = True
 
-  tl.start()
   to.start()
   td.start()
-
+    
   td.join()
