@@ -63,7 +63,7 @@ class Drone():
         # max_horizontal_speed (float) – Maximum horizontal speed in m/s.
         # max_vertical_speed (float) – Maximum vertical speed in m/s.
         # max_yaw_rotation_speed (float) – Maximum yaw rotation speed in degrees/s.
-
+        logger.warning(f"extended move called with front {front}, right {right}, down {down}")
         if self.state == DroneState.TAKEOFF:
             assert self.drone(
                 extended_move_by(front, right, down, 0.0, 0.7, 0.7, 0.7)
