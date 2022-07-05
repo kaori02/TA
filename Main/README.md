@@ -31,10 +31,11 @@ This is the directory where you want to run the program.
 
   ```sh
   > source ~/parrot-groundsdk/products/olympe/linux/env/shell
-  > chmod +x make_all.sh
-  > chmod +x run.sh
+  > chmod +x make_all.sh        # only for the very first run
+  > chmod +x run.sh             # only for the very first run
+  > chmod +x threading_run.sh   # only for the very first run
   > ./make_all.sh
-  > ./run.sh
+  > ./run.sh # or ./threading_run.sh
   ```
 - Get location via android app
 

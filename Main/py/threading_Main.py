@@ -54,7 +54,7 @@ def setDroneHeading(droneBearing, locBearing):
   drone.rotate(deltaBearing)
 
 def obstacle_avoidance(left_q, right_q):
-  while not end_loop:
+  while (not end_loop) and (len(left_q) > 0) and (len(right_q) > 0):
     left_data = left_q.pop(0)
     right_data = right_q.pop(0)
 
@@ -275,4 +275,3 @@ if __name__ == "__main__":
   td.start()
 
   td.join()
-
