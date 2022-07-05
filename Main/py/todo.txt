@@ -1,3 +1,0 @@
-- thread pembacaan kedua lidar biar jalan terus di background
-- thread proses obstacle avoidance jalan terus di bg sambil return hasil direction
-- thread drone
