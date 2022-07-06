@@ -54,6 +54,10 @@ class Drone():
             self.state = DroneState.TAKEOFF
             self.write("Takeoff...\n")
 
+    # TODO: implement PCMD
+    def move_PCMD():
+      pass
+    
     def ext_move(self, front, right, down):
         # extended_move_by(d_x, d_y, d_z, d_psi, max_horizontal_speed, max_vertical_speed, max_yaw_rotation_speed, _timeout=10, _no_expect=False, _float_tol=(1e-07, 1e-09))
         # d_x (float) – Wanted displacement along the FRONT axis [m]
