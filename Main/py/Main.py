@@ -102,17 +102,7 @@ def obstacle_avoidance():
   elif obs_avo_state == obsAvoState.BACK:
     obs_avo.back(left_data, right_data)
 
-  
-
-# ini bakal masuk semua ke obstacle_avoidance
 def move():
-  # TODO: remove 
-  # disini diubah jadi threading
-  # to = threading.Thread(target=obstacle_avoidance)
-  # to.daemon = True
-  # to.start()
-  # to.join()
-
   v_dir, h_dir = obs_avo.get_direction()
   displacement = 0.2    # 20 cm
   
@@ -141,7 +131,6 @@ def move():
 
   drone.ext_move(f_dis, h_dis, v_dis)
 
-# normal aman
 def moveNormal():
   global initDistance
   global totalDistance
@@ -184,12 +173,16 @@ def moveNormal():
     logger.info("distance: "+str(distance))
     checkDroneBearing(abs(locBearing))
     # drone.moveTo(distance, 0.0)
-    drone.ext_move(distance, 0.0, 0.0)
+    drone.ext_move(1.5, 0.0, 0.0)
     totalDistance = totalDistance - distance
 
 def main():
   global obs_avo
   drone.connectToDrone()
+
+  # to = threading.Thread(target=obstacle_avoidance)
+  # to.daemon = True
+  # to.start()
 
   while not end_loop:
     obstacle_avoidance()
@@ -218,8 +211,8 @@ def main():
       del lidar_0x44
       del lidar_0x62
       logger.info("interrupt")
+      # to.join()
       sys.exit
-
 
 if __name__ == "__main__":
   if updateLoc:
