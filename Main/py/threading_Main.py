@@ -141,6 +141,7 @@ def droneProcess():
           distance = totalDistance
         if distance <= 0.2 or totalDistance <= 0.0:
           # drone sampai di titik tujuan
+          logger.info("distance: "+str(distance))
           drone.atDest = True
         if drone.atDest == True:
           drone.land()
@@ -258,14 +259,14 @@ if __name__ == "__main__":
   # disini threading
   # lock = threading.Lock()
 
-  to = threading.Thread(target=obstacle_avoidance)
   td = threading.Thread(target=droneProcess)
+  to = threading.Thread(target=obstacle_avoidance)
 
   # tl.daemon = True
-  # to.daemon = True
-  # td.daemon = True
+  td.daemon = True
+  to.daemon = True
 
-  to.start()
   td.start()
+  to.start()
     
   td.join()
