@@ -2,7 +2,7 @@ from math import cos, sin, sqrt, pow, radians, tan, atan, atan2, degrees
 import olympe
 from drone.droneState import DroneState
 from olympe.messages.ardrone3.PilotingSettings import MaxTilt
-from olympe.messages.ardrone3.Piloting import TakeOff, moveBy, Landing
+from olympe.messages.ardrone3.Piloting import TakeOff, moveBy, Landing, PCMD, CancelMoveBy
 from olympe.messages.move import extended_move_by
 from olympe.messages.ardrone3.PilotingState import FlyingStateChanged
 from olympe.messages.ardrone3.GPSSettingsState import HomeChanged
@@ -54,9 +54,6 @@ class Drone():
             self.state = DroneState.TAKEOFF
             self.write("Takeoff...\n")
 
-    # TODO: implement PCMD
-    def move_PCMD():
-      pass
     
     def ext_move(self, front, right, down):
         # extended_move_by(d_x, d_y, d_z, d_psi, max_horizontal_speed, max_vertical_speed, max_yaw_rotation_speed, _timeout=10, _no_expect=False, _float_tol=(1e-07, 1e-09))
@@ -105,6 +102,45 @@ class Drone():
                 >> FlyingStateChanged(state="hovering", _timeout=10)
             ).wait().success()
     
+    def move_PCMD(self, right, front, up):
+        # flag (u8) – Boolean flag: 1 if the ROLL and PITCH values should be taken in consideration. 0 otherwise
+
+        # roll (i8) – Roll angle as signed percentage. On copters: Roll angle expressed as signed percentage of the max pitch/roll setting, in range [-100, 100] 
+        #     -100 corresponds to a roll angle of max pitch/roll to the LEFT (drone will fly left) 
+        #     100 corresponds to a roll angle of max pitch/roll to the [RIGHT] (drone will fly right) 
+        #     This value may be clamped if necessary, in order to respect the maximum supported physical tilt of the copter.
+
+        # pitch (i8) – Pitch angle as signed percentage. On copters: Expressed as signed percentage of the max pitch/roll setting, in range [-100, 100] 
+        #     -100 corresponds to a pitch angle of max pitch/roll towards sky (drone will fly backward)
+        #     100 corresponds to a pitch angle of max pitch/roll towards ground (drone will fly FORWARD) 
+        #     This value may be clamped if necessary, in order to respect the maximum supported physical tilt of the copter. 
+
+        # yaw (i8) – Yaw rotation speed as signed percentage. On copters: Expressed as signed percentage of the max yaw rotation speed setting, in range [-100, 100]. 
+        #     -100 corresponds to a counter-clockwise rotation of max yaw rotation speed 
+        #     100 corresponds to a clockwise rotation of max yaw rotation speed 
+        #     This value may be clamped if necessary, in order to respect the maximum supported physical tilt of the copter.
+
+        # gaz (i8) – Throttle as signed percentage. On copters: Expressed as signed percentage of the max vertical speed setting, in range [-100, 100] 
+        #     -100 corresponds to a max vertical speed towards ground 
+        #     100 corresponds to a max vertical speed towards sky 
+        #     This value may be clamped if necessary, in order to respect the maximum supported physical tilt of the copter. 
+        #     During the landing phase, putting some positive gaz will cancel the land. 
+
+        # timestampAndSeqNum (u32) – Command timestamp in milliseconds (low 24 bits) + command sequence number (high 8 bits) [0;255].
+        logger.warning(f"calling PCMD with right {right}, front {front}, up {up}")
+        if self.state == DroneState.TAKEOFF:
+            self.drone(PCMD(1, right, front, 0, up, timestampAndSeqNum=0))
+    
+    def cancel(self):
+        logger.warning(f"calling cancel")
+        if self.state == DroneState.TAKEOFF:
+            self.drone(CancelMoveBy())
+    
+    def cancel_PCMD(self):
+        logger.warning(f"calling cancel PCMD")
+        if self.state == DroneState.TAKEOFF:
+            self.drone(PCMD(1, 0, 0, 0, 0, timestampAndSeqNum=0))
+
     def land(self):
         if self.state == DroneState.TAKEOFF:
             assert self.drone(

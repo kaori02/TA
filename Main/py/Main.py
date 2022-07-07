@@ -80,6 +80,8 @@ def obstacle_avoidance():
       logger.info("remaining HOVERING time:" + str(t_end-time.time()))
 
       # hovering disini
+      # drone.cancel()
+      drone.cancel_PCMD()
       obs_avo.set_direction(obs_avo.DirectionState.HOLD, obs_avo.DirectionState.HOLD)
     else:
       # selesai hovering, ganti ke AVOIDING
@@ -176,8 +178,8 @@ def moveNormal():
       logger.info("distance: "+str(distance))
       # checkDroneBearing(abs(locBearing))        #to prevent rotating
       # drone.moveTo(distance, 0.0)
-      drone.ext_move(1.0, 0.0, 0.0)
-      totalDistance = totalDistance - 1.0
+      drone.ext_move(distance, 0.0, 0.0)
+      totalDistance = totalDistance - distance
 
 def main():
   global obs_avo
@@ -205,7 +207,7 @@ def main():
           moveNormal()
         # kalo ada obstacle cek obs
         else:
-          logger.warning("PATH NOT CLEAR")
+          logger.warning(f"CURR STATE {obs_state}")
           # move disini
           move()
 

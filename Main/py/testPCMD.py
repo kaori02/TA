@@ -80,6 +80,8 @@ def obstacle_avoidance():
       logger.info("remaining HOVERING time:" + str(t_end-time.time()))
 
       # hovering disini
+      # drone.cancel()
+      drone.cancel_PCMD()
       obs_avo.set_direction(obs_avo.DirectionState.HOLD, obs_avo.DirectionState.HOLD)
     else:
       # selesai hovering, ganti ke AVOIDING
@@ -134,50 +136,47 @@ def move():
 def moveNormal():
   global initDistance
   global totalDistance
-  obstacle_avoidance()
-  if obs_avo.get_state() != obsAvoState.CLEAR:
-    move()
-  else:
+
+  distance, locBearing = drone.calculateDistance(pointDestination[0], pointDestination[1])
+  while distance < 0.0:
+    # dilakukan pengecekan untuk GPS drone, bila gps tidak menangkap lokasi maka akan terjebak di
+    # loop ini sampai mendapatkan lokasi
     distance, locBearing = drone.calculateDistance(pointDestination[0], pointDestination[1])
-    while distance < 0.0:
-      # dilakukan pengecekan untuk GPS drone, bila gps tidak menangkap lokasi maka akan terjebak di
-      # loop ini sampai mendapatkan lokasi
-      distance, locBearing = drone.calculateDistance(pointDestination[0], pointDestination[1])
-      logger.warning("masuk loop gps tidak menangkap lokasi, distance: "+ str(distance))
-      time.sleep(2)
-    if initDistance < 0:
-      # pada awal eksekusi initDistance akan diset -999 yang menandakan drone baru diperintahkan untuk
-      # terbang dan belum memiliki total jarak tempuh ke titik tujuan
-      initDistance = distance
-      # jarak total yang harus ditempuh drone untuk sampai ke titik tujuan, didapatkan sekali saat 
-      # drone pertama kali menghitung jarak titik drone dengan titik tujuan
-      totalDistance = distance
-    if totalDistance > 5.0:
-      # untuk keamanan (supaya drone tidak menabrak pohon dsb, maka jarak tempuh drone dibatasi 
-      # maksimal 10 meter)
-      totalDistance = 5.0
-      distance = 5.0
-    if distance > totalDistance and totalDistance >= 0:
-      # untuk menghindari drone tidak pernah turun karena hasil perhitungan gps tidak pernah sampai 0,
-      # maka totalDistance dijadikan acuan
-      distance = totalDistance
-    if distance <= 0.2 or totalDistance <= 0.0:
-      # drone sampai di titik tujuan
-      logger.info("distance: "+str(distance))
-      drone.atDest = True
-    if drone.atDest == True:
-      end_loop = True
-      drone.land()
-      logger.info("Landing...")
-      initDistance = -999.0
-      totalDistance = 0.0
-      # drone.atDest = False
-    else:
-      logger.info("distance: "+str(distance))
-      # checkDroneBearing(abs(locBearing))        #to prevent rotating
-      # drone.moveTo(distance, 0.0)
-      drone.ext_move(1.0, 0.0, 0.0)
-      totalDistance = totalDistance - 1.0
+    logger.warning("masuk loop gps tidak menangkap lokasi, distance: "+ str(distance))
+    time.sleep(2)
+  if initDistance < 0:
+    # pada awal eksekusi initDistance akan diset -999 yang menandakan drone baru diperintahkan untuk
+    # terbang dan belum memiliki total jarak tempuh ke titik tujuan
+    initDistance = distance
+    # jarak total yang harus ditempuh drone untuk sampai ke titik tujuan, didapatkan sekali saat 
+    # drone pertama kali menghitung jarak titik drone dengan titik tujuan
+    totalDistance = distance
+  if totalDistance > 5.0:
+    # untuk keamanan (supaya drone tidak menabrak pohon dsb, maka jarak tempuh drone dibatasi 
+    # maksimal 10 meter)
+    totalDistance = 5.0
+    distance = 5.0
+  if distance > totalDistance and totalDistance >= 0:
+    # untuk menghindari drone tidak pernah turun karena hasil perhitungan gps tidak pernah sampai 0,
+    # maka totalDistance dijadikan acuan
+    distance = totalDistance
+  if distance <= 0.2 or totalDistance <= 0.0:
+    # drone sampai di titik tujuan
+    logger.info("distance: "+str(distance))
+    drone.atDest = True
+  if drone.atDest == True:
+    end_loop = True
+    drone.land()
+    logger.info("Landing...")
+    initDistance = -999.0
+    totalDistance = 0.0
+    # drone.atDest = False
+  else:
+    logger.info("distance: "+str(distance))
+    # checkDroneBearing(abs(locBearing))        #to prevent rotating
+    # drone.moveTo(distance, 0.0)
+    drone.ext_move(distance, 0.0, 0.0)
+    totalDistance = totalDistance - distance
 
 def main():
   global obs_avo
@@ -205,7 +204,7 @@ def main():
           moveNormal()
         # kalo ada obstacle cek obs
         else:
-          logger.warning("PATH NOT CLEAR")
+          logger.warning(f"CURR STATE {obs_state}")
           # move disini
           move()
 
