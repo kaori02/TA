@@ -178,7 +178,7 @@ def moveNormal():
       logger.info("distance: "+str(distance))
       # checkDroneBearing(abs(locBearing))        #to prevent rotating
       # drone.moveTo(distance, 0.0)
-      drone.ext_move(distance, 0.0, 0.0)
+      drone.ext_move(1.0, 0.0, 0.0)
       totalDistance = totalDistance - distance
 
 def main():
