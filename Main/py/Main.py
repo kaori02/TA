@@ -191,6 +191,7 @@ def main():
 
   while not end_loop:
     obstacle_avoidance()
+    drone.writeCurrentPosition()
     try:
       if drone.state == DroneState.LAND:
         # mengecek bila drone sedang mendarat maka akan diperintahkan untuk takeoff

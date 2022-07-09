@@ -190,7 +190,7 @@ class ObstacleAvoidance:
       # setelah nentuin arah, menuju arah itu dengan waktunya dibatesin max 3 detik tiap arah
       if self.get_timer_hold_status():
         logger.info("timer BACK ON")
-        self.t_end = time.time() + min(3 * max(v_back_cnt, h_back_cnt), 6)
+        self.t_end = time.time() + (4 * max(v_back_cnt, h_back_cnt))
         self.set_timer_hold_status(False)
 
       if time.time() < self.t_end:

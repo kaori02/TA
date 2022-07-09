@@ -2,4 +2,5 @@ bin
 __pycache__
 *.log
 coba_thread.py
+tryDatetime.py
 todo.txt

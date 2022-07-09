@@ -9,6 +9,7 @@ from olympe.messages.ardrone3.GPSSettingsState import HomeChanged
 from olympe.messages.ardrone3.PilotingState import PositionChanged
 from olympe.messages.ardrone3.GPSSettingsState import GPSFixStateChanged
 from Log import Log
+from datetime import datetime
 
 logger = Log()
 
@@ -68,7 +69,7 @@ class Drone():
         if self.state == DroneState.TAKEOFF:
             assert self.drone(
                 extended_move_by(front, right, down, 0.0, 0.8, 0.8, 0.0)
-                >> FlyingStateChanged(state="hovering", _timeout=10)
+                # >> FlyingStateChanged(state="hovering", _timeout=10)
             ).wait().success()
 
     def move(self, front, right, down):
@@ -185,3 +186,8 @@ class Drone():
         bearing = self.calculateBearing(start, dest)
         normalizeBearing = (degrees(bearing) + 360) % 360
         return distance, normalizeBearing
+
+    def writeCurrentPosition(self):
+        coordinate = self.getPosition()
+        if coordinate['latitude'] != 500.0 and coordinate['longitude'] != 500.0:
+          self.write("{}: {},{}\n".format(datetime.now(), coordinate['latitude'], coordinate['longitude']))
