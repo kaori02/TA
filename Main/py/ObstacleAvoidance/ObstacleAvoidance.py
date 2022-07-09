@@ -178,8 +178,10 @@ class ObstacleAvoidance:
         self.h_back = self.DirectionState.LEFT
       elif h_back_cnt > 0:
         self.h_back = self.DirectionState.RIGHT
+      else:
+        self.h_back = self.DirectionState.HOLD
       
-      h_back_cnt = abs(h_back_cnt)
+      abs_h_back_cnt = abs(h_back_cnt)
       
       # VERTICAL = DOWN = -UP
       # TODO: down dibatasi sampai 1.5 m paling rendah
@@ -187,15 +189,16 @@ class ObstacleAvoidance:
       if v_back_cnt > 0:
         self.v_back = self.DirectionState.DOWN
 
-      # setelah nentuin arah, menuju arah itu dengan waktunya dibatesin max 3 detik tiap arah
+      # setelah nentuin arah, menuju arah itu dengan waktunya dibatesin max 4 detik tiap arah
       if self.get_timer_hold_status():
         logger.info("timer BACK ON")
-        self.t_end = time.time() + (4 * max(v_back_cnt, h_back_cnt))
+        self.t_end = time.time() + (4 * max(v_back_cnt, abs_h_back_cnt))
         self.set_timer_hold_status(False)
 
       if time.time() < self.t_end:
         logger.info("remaining BACK time :" + str(self.t_end-time.time()))
         self.set_direction(self.v_back, self.h_back)
+        logger.info("v_back: " + str(self.v_back) + "\th_back: " + str(self.h_back))
       
       elif (self.t_end < time.time()) and (self.t_end != -99.0) and (left_data > self.threshold) and (right_data > self.threshold):
         # done, balik ke CLEAR

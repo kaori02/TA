@@ -117,11 +117,14 @@ def move():
   # HOLD = 0
   # FRONT
   if h_dir == obs_avo.DirectionState.FRONT:
-    f_dis = displacement
+    f_dis = displacement * 1.5
 
   # LEFT  = -right
   if h_dir == obs_avo.DirectionState.LEFT:
     h_dis = -h_dis
+    if obs_state == obsAvoState.BACK:
+      h_dis = h_dis * 1.5
+
   elif h_dir == obs_avo.DirectionState.HOLD:
     h_dis = 0
 
@@ -180,6 +183,29 @@ def moveNormal():
       # drone.moveTo(distance, 0.0)
       drone.ext_move(2.0, 0.0, 0.0)
       totalDistance = totalDistance - distance
+
+def Test():
+  global obs_avo
+
+  while not end_loop:
+    obstacle_avoidance()
+    try:
+        # kalo normal panggil moveNormal
+        obs_state = obs_avo.get_state()
+        if obs_state == obsAvoState.CLEAR:
+          logger.info("[TEST]\tPATH CLEAR")
+        # kalo ada obstacle cek obs
+        else:
+          logger.warning(f"[TEST]\tCURR STATE {obs_state}")
+          # move disini
+
+    except KeyboardInterrupt:
+      del obs_avo
+      del lidar_0x44
+      del lidar_0x62
+      logger.info("interrupt")
+      # to.join()
+      sys.exit
 
 def main():
   global obs_avo
@@ -263,3 +289,4 @@ if __name__ == "__main__":
     time.sleep(1)
 
   main()
+  # Test()
