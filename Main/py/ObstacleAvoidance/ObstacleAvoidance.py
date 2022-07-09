@@ -144,11 +144,11 @@ class ObstacleAvoidance:
       
       # disini gerak manuver avoidnya
       if current_direction[1] == self.DirectionState.RIGHT:
-        logger.info("kanan ngab")
+        logger.info("going right")
       elif current_direction[1] == self.DirectionState.LEFT:
-        logger.info("kiri ngab")
+        logger.info("going left")
       elif current_direction[0] == self.DirectionState.UP:
-        logger.info("naik ngab")
+        logger.info("going up")
     else:
       # kalo ga aman2, hold bandingin lagi
       logger.info("BINGUNG")

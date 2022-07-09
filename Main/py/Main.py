@@ -30,10 +30,10 @@ totalDistance = 0
 
 lidar_0x44 = LidarReader("./bin/0x44_llv3.out")
 lidar_0x62 = LidarReader("./bin/0x62_llv3.out")
-obs_threshold = 150     # 150 cm
+obs_threshold = 100     # 100 cm
 obs_avo = ObstacleAvoidance(obs_threshold)
 t_end = -99.0
-wait_time = 5
+wait_time = 1
 end_loop = False
 
 def checkDroneBearing(locBearing):
@@ -106,9 +106,9 @@ def obstacle_avoidance():
 
 def move():
   v_dir, h_dir = obs_avo.get_direction()
-  displacement = 0.2    # 20 cm
+  displacement = 0.75   # 75 cm
   
-  v_dis = displacement
+  v_dis = displacement * 0.5
   h_dis = displacement
   f_dis = 0
 
@@ -154,16 +154,16 @@ def moveNormal():
       # jarak total yang harus ditempuh drone untuk sampai ke titik tujuan, didapatkan sekali saat 
       # drone pertama kali menghitung jarak titik drone dengan titik tujuan
       totalDistance = distance
-    if totalDistance > 5.0:
+    if totalDistance > 7.0:
       # untuk keamanan (supaya drone tidak menabrak pohon dsb, maka jarak tempuh drone dibatasi 
       # maksimal 10 meter)
-      totalDistance = 5.0
-      distance = 5.0
+      totalDistance = 7.0
+      distance = 7.0
     if distance > totalDistance and totalDistance >= 0:
       # untuk menghindari drone tidak pernah turun karena hasil perhitungan gps tidak pernah sampai 0,
       # maka totalDistance dijadikan acuan
       distance = totalDistance
-    if distance <= 0.2 or totalDistance <= 0.0:
+    if distance <= 0.1 or totalDistance <= 0.0:
       # drone sampai di titik tujuan
       logger.info("distance: "+str(distance))
       drone.atDest = True
@@ -178,7 +178,7 @@ def moveNormal():
       logger.info("distance: "+str(distance))
       # checkDroneBearing(abs(locBearing))        #to prevent rotating
       # drone.moveTo(distance, 0.0)
-      drone.ext_move(1.0, 0.0, 0.0)
+      drone.ext_move(2.0, 0.0, 0.0)
       totalDistance = totalDistance - distance
 
 def main():
