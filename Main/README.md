@@ -6,7 +6,7 @@ This is the directory where you want to run the program.
 
 - Install **Olympe** (check out [this](https://forum.developer.parrot.com/t/olympe-1-01-on-raspberry-pi-zero-and-pi3-a/9487) or [this](https://gist.github.com/prolifel/6df88190a51a48787efda767515b3267#file-olympe-md) to know how)
 
-- Callibrate the compass
+- Callibrate the [compass](https://github.com/RigacciOrg/py-qmc5883l)
 - Setup bluetooth in raspi. You can use [this](https://howchoo.com/pi/bluetooth-raspberry-pi#setting-up-bluetooth-using-a-terminal-or-ssh-connection).
 - Install Pybluez
 - Use [this](https://stackoverflow.com/questions/36675931/bluetooth-btcommon-bluetootherror-2-no-such-file-or-directory) to prevent `bluetooth.btcommon.BluetoothError: (2, 'No such file or directory')` error

@@ -123,7 +123,7 @@ def move():
   if h_dir == obs_avo.DirectionState.LEFT:
     h_dis = -h_dis
     if obs_state == obsAvoState.BACK:
-      h_dis = h_dis * 1.5
+      h_dis = h_dis * 4.5
 
   elif h_dir == obs_avo.DirectionState.HOLD:
     h_dis = 0
