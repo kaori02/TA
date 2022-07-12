@@ -1,6 +1,7 @@
 bin
 __pycache__
-*.log
+olympe.log
+ulog.log
 coba_thread.py
 tryDatetime.py
 todo.txt
